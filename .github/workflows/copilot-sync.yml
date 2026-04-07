@@ -1,0 +1,144 @@
+name: Copilot Config Sync
+
+# Reusable workflow that syncs copilot customization files from copilot-kitchen.
+#
+# Configuration: either pass collections/exclude as workflow inputs, or place a
+# .github/copilot-sync.json in the target repo:
+#   {"collections": ["common", "backend"], "exclude": ["tech-stack"]}
+# Workflow inputs override copilot-sync.json values.
+#
+# Creates a PR with changed files. If APP_PRIVATE_KEY is provided, the PR is
+# auto-approved and queued for merge — same pattern as dependabot-automerge.
+#
+# Token roles (when APP_PRIVATE_KEY is provided):
+#   App token  → creates PR (triggers build via push event)
+#   GITHUB_TOKEN → approves PR (different actor than app)
+#   App token  → enables auto-merge (triggers merge_group events)
+#
+# Without APP_PRIVATE_KEY, the PR is created with GITHUB_TOKEN and requires
+# manual review. Build may not trigger automatically in this case.
+
+on:
+  workflow_call:
+    inputs:
+      collections:
+        description: "Comma-separated collections, e.g. 'common,backend'. Default: all files."
+        type: string
+        required: false
+      exclude:
+        description: "Comma-separated names to exclude, e.g. 'tech-stack,kafka-topic'."
+        type: string
+        required: false
+      automerge_app_id:
+        description: "GitHub App ID for PR creation and auto-merge."
+        type: number
+        required: false
+        default: 2906300
+    secrets:
+      APP_PRIVATE_KEY:
+        description: "GitHub App private key for auto-approve and auto-merge."
+        required: false
+
+concurrency:
+  group: copilot-config-sync
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  sync:
+    name: Sync copilot customizations
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout target repo
+        uses: actions/checkout@v4
+
+      - name: Shallow clone source repo
+        run: |
+          git clone --depth 1 https://github.com/${{ github.repository_owner }}/copilot-kitchen.git /tmp/source
+          echo "SOURCE_SHA=$(git -C /tmp/source rev-parse HEAD)" >> "$GITHUB_ENV"
+
+      - name: Install dependencies
+        run: pip install pyyaml
+
+      - name: Run sync script
+        id: sync
+        env:
+          COLLECTIONS: ${{ inputs.collections }}
+          EXCLUDE: ${{ inputs.exclude }}
+        run: |
+          ARGS=(--source /tmp/source --target . --output /tmp/sync-result.json --source-sha "$SOURCE_SHA")
+
+          if [ -n "$COLLECTIONS" ]; then
+            ARGS+=(--collections "$COLLECTIONS")
+          fi
+
+          if [ -n "$EXCLUDE" ]; then
+            ARGS+=(--exclude "$EXCLUDE")
+          fi
+
+          python3 /tmp/source/scripts/sync.py "${ARGS[@]}"
+
+          python3 /tmp/source/scripts/summary.py /tmp/sync-result.json >> "$GITHUB_OUTPUT"
+
+      # --- Auto-merge setup (optional) ---
+
+      - name: Check if auto-merge is configured
+        if: steps.sync.outputs.has_changes == 'true'
+        id: check-secret
+        env:
+          HAS_SECRET: ${{ secrets.APP_PRIVATE_KEY }}
+        run: echo "available=$([ -n "$HAS_SECRET" ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
+
+      - name: Generate app token
+        if: steps.check-secret.outputs.available == 'true'
+        id: app-token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ inputs.automerge_app_id }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+
+      # --- Create PR ---
+
+      - name: Create pull request
+        if: steps.sync.outputs.has_changes == 'true'
+        id: pr
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ steps.app-token.outputs.token || github.token }}
+          commit-message: "chore: sync copilot customizations from copilot-kitchen"
+          title: "chore: sync copilot customizations"
+          body: |
+            Syncs copilot customization files from [copilot-kitchen](https://github.com/${{ github.repository_owner }}/copilot-kitchen).
+
+            **Source:** `${{ github.repository_owner }}/copilot-kitchen@${{ env.SOURCE_SHA }}`
+
+            **Changes:**
+            ```
+            ${{ steps.sync.outputs.summary }}
+            ```
+
+            ---
+            🤖 Created automatically by the Copilot Config Sync workflow.
+          branch: copilot-config-sync
+          delete-branch: true
+          labels: dependencies
+
+      # --- Auto-approve and merge ---
+
+      - name: Approve pull request
+        if: steps.pr.outputs.pull-request-number && steps.check-secret.outputs.available == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ steps.pr.outputs.pull-request-number }}
+        run: gh pr review "$PR_NUMBER" --approve --body "Auto-approved copilot config sync."
+
+      - name: Enable auto-merge
+        if: steps.pr.outputs.pull-request-number && steps.check-secret.outputs.available == 'true'
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          PR_NUMBER: ${{ steps.pr.outputs.pull-request-number }}
+        run: gh pr merge "$PR_NUMBER" --auto

@@ -1,0 +1,2 @@
+# Collapse auto-generated manifest in PR diffs
+.github/.copilot-kitchen-manifest.json linguist-generated=true

@@ -1,0 +1,57 @@
+# Collections — maps named groups to copilot customization files.
+# Used by the sync workflow when callers specify: collections: "common,backend"
+# 'common' is always included implicitly. Omitting collections syncs all files.
+
+common:
+  agents:
+    - hovmester
+    - souschef
+    - kokk
+    - konditor
+    - mattilsynet
+    - inspektør-claude
+    - inspektør-gpt
+  instructions:
+    - security
+    - docker
+    - github-actions
+  skills:
+    - brainstorm
+    - conventional-commit
+    - grill-me
+    - nais-manifest
+    - observability-setup
+    - issue-management
+    - klarsprak
+    - pull-request
+    - security-review
+    - tdd
+    - tech-stack
+  issue_templates:
+    - feature
+    - bug
+    - story
+    - task
+    - epic
+    - config
+  pull_request_template: PULL_REQUEST_TEMPLATE.md
+
+backend:
+  instructions:
+    - kotlin
+  skills:
+    - api-design
+    - auth-overview
+    - flyway-migration
+    - kafka-topic
+    - kotlin-ktor
+    - kotlin-spring
+    - postgresql-review
+
+frontend:
+  instructions:
+    - accessibility
+  skills:
+    - aksel-design
+    - auth-overview
+    - lumi-survey
