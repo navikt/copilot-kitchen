@@ -10,11 +10,15 @@ Consumer-repos kaller en reusable workflow (`copilot-sync.yml`) som shallow-klon
 ### Filstruktur
 
 ```
-agents/           → .github/agents/        (alltid-tilgjengelige agentprofiler)
-instructions/     → .github/instructions/  (auto-loaded basert på applyTo-mønster)
-skills/           → .github/skills/        (on-demand, eksplisitt invokert)
-issue-templates/  → .github/ISSUE_TEMPLATE/
-scripts/          (sync-logikk, ikke distribuert)
+dist/                  (alt som synkes til consumer-repos)
+  agents/              → .github/agents/
+  instructions/        → .github/instructions/
+  skills/              → .github/skills/
+  issue-templates/     → .github/ISSUE_TEMPLATE/
+.github/               (dette repoets egen Copilot-konfig, synkes IKKE)
+  copilot-instructions.md
+  skills/              (repo-lokale skills)
+scripts/               (sync-verktøy, synkes ikke)
 ```
 
 ### Collections
@@ -83,4 +87,4 @@ python3 scripts/sync.py --source . --target /path/to/repo --output /tmp/result.j
 
 ## Upstream-referanse
 
-Team eSyfo vedlikeholder copilot-kitchen uavhengig, men sjekker jevnlig `navikt/copilot` for nye mønstre, instruksjoner og skills som er verdt å adoptere. Se `internal/copilot-upstream-sync/SKILL.md` for strukturert gjennomgang (denne filen synkes ikke til consumer-repos).
+Team eSyfo vedlikeholder copilot-kitchen uavhengig, men sjekker jevnlig `navikt/copilot` for nye mønstre, instruksjoner og skills som er verdt å adoptere. Se `.github/skills/copilot-upstream-sync/SKILL.md` for strukturert gjennomgang (ligger i `.github/skills/`, ikke `skills/`, så den synkes ikke til consumer-repos).

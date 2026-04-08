@@ -33,12 +33,12 @@ def _write(path: Path, content: str) -> None:
 
 def _make_source(root: Path) -> Path:
     """Create a minimal source tree for testing."""
-    _write(root / "agents" / "bot.agent.md", "agent content")
-    _write(root / "instructions" / "kotlin.instructions.md", "instructions")
-    _write(root / "skills" / "tdd" / "SKILL.md", "skill")
-    _write(root / "skills" / "tdd" / "references" / "examples.md", "examples")
-    _write(root / "issue-templates" / "bug.yml", "bug template")
-    _write(root / "PULL_REQUEST_TEMPLATE.md", "pr template")
+    _write(root / "dist" / "agents" / "bot.agent.md", "agent content")
+    _write(root / "dist" / "instructions" / "kotlin.instructions.md", "instructions")
+    _write(root / "dist" / "skills" / "tdd" / "SKILL.md", "skill")
+    _write(root / "dist" / "skills" / "tdd" / "references" / "examples.md", "examples")
+    _write(root / "dist" / "issue-templates" / "bug.yml", "bug template")
+    _write(root / "dist" / "PULL_REQUEST_TEMPLATE.md", "pr template")
     return root
 
 
@@ -332,21 +332,21 @@ class TestCollections:
     def _make_full_source(self, root: Path) -> Path:
         """Source with files matching the collections above."""
         _write(root / "collections.yml", COLLECTIONS_YML)
-        _write(root / "agents" / "hovmester.agent.md", "hovmester")
-        _write(root / "agents" / "kokk.agent.md", "kokk")
-        _write(root / "agents" / "konditor.agent.md", "konditor")  # NOT in common
-        _write(root / "instructions" / "security.instructions.md", "security")
-        _write(root / "instructions" / "kotlin.instructions.md", "kotlin")
-        _write(root / "skills" / "brainstorm" / "SKILL.md", "brainstorm")
-        _write(root / "skills" / "tdd" / "SKILL.md", "tdd")
-        _write(root / "skills" / "kafka-topic" / "SKILL.md", "kafka")
-        _write(root / "skills" / "api-design" / "SKILL.md", "api")
-        _write(root / "skills" / "aksel-design" / "SKILL.md", "aksel")
-        _write(root / "skills" / "aksel-design" / "references" / "tokens.md", "tokens")
-        _write(root / "skills" / "accessibility" / "SKILL.md", "a11y")
-        _write(root / "issue-templates" / "bug.yml", "bug")
-        _write(root / "issue-templates" / "feature.yml", "feature")  # NOT in common
-        _write(root / "PULL_REQUEST_TEMPLATE.md", "pr template")
+        _write(root / "dist" / "agents" / "hovmester.agent.md", "hovmester")
+        _write(root / "dist" / "agents" / "kokk.agent.md", "kokk")
+        _write(root / "dist" / "agents" / "konditor.agent.md", "konditor")  # NOT in common
+        _write(root / "dist" / "instructions" / "security.instructions.md", "security")
+        _write(root / "dist" / "instructions" / "kotlin.instructions.md", "kotlin")
+        _write(root / "dist" / "skills" / "brainstorm" / "SKILL.md", "brainstorm")
+        _write(root / "dist" / "skills" / "tdd" / "SKILL.md", "tdd")
+        _write(root / "dist" / "skills" / "kafka-topic" / "SKILL.md", "kafka")
+        _write(root / "dist" / "skills" / "api-design" / "SKILL.md", "api")
+        _write(root / "dist" / "skills" / "aksel-design" / "SKILL.md", "aksel")
+        _write(root / "dist" / "skills" / "aksel-design" / "references" / "tokens.md", "tokens")
+        _write(root / "dist" / "skills" / "accessibility" / "SKILL.md", "a11y")
+        _write(root / "dist" / "issue-templates" / "bug.yml", "bug")
+        _write(root / "dist" / "issue-templates" / "feature.yml", "feature")  # NOT in common
+        _write(root / "dist" / "PULL_REQUEST_TEMPLATE.md", "pr template")
         return root
 
     def test_no_collections_returns_all_files(self, tmp_path: Path) -> None:
@@ -467,15 +467,15 @@ class TestExclude:
         """Exclude is applied after collections — can narrow further."""
         source = tmp_path / "src"
         _write(source / "collections.yml", COLLECTIONS_YML)
-        _write(source / "agents" / "hovmester.agent.md", "h")
-        _write(source / "agents" / "kokk.agent.md", "k")
-        _write(source / "skills" / "brainstorm" / "SKILL.md", "b")
-        _write(source / "skills" / "tdd" / "SKILL.md", "t")
-        _write(source / "skills" / "kafka-topic" / "SKILL.md", "kf")
-        _write(source / "instructions" / "security.instructions.md", "s")
-        _write(source / "instructions" / "kotlin.instructions.md", "kt")
-        _write(source / "issue-templates" / "bug.yml", "bug")
-        _write(source / "PULL_REQUEST_TEMPLATE.md", "pr")
+        _write(source / "dist" / "agents" / "hovmester.agent.md", "h")
+        _write(source / "dist" / "agents" / "kokk.agent.md", "k")
+        _write(source / "dist" / "skills" / "brainstorm" / "SKILL.md", "b")
+        _write(source / "dist" / "skills" / "tdd" / "SKILL.md", "t")
+        _write(source / "dist" / "skills" / "kafka-topic" / "SKILL.md", "kf")
+        _write(source / "dist" / "instructions" / "security.instructions.md", "s")
+        _write(source / "dist" / "instructions" / "kotlin.instructions.md", "kt")
+        _write(source / "dist" / "issue-templates" / "bug.yml", "bug")
+        _write(source / "dist" / "PULL_REQUEST_TEMPLATE.md", "pr")
 
         mapping = build_file_mapping(source)
         allowed = resolve_collections(source, "common,backend")

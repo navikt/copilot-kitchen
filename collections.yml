@@ -8,7 +8,6 @@ common:
     - souschef
     - kokk
     - konditor
-    - mattilsynet
     - inspektør-claude
     - inspektør-gpt
   instructions:

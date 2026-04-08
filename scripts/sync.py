@@ -25,14 +25,14 @@ MANIFEST_PATH = ".github/.copilot-kitchen-manifest.json"
 LEGACY_MARKER = "Managed by esyfo-cli"
 
 DIR_MAPPING: dict[str, str] = {
-    "agents": ".github/agents",
-    "instructions": ".github/instructions",
-    "skills": ".github/skills",
-    "issue-templates": ".github/ISSUE_TEMPLATE",
+    "dist/agents": ".github/agents",
+    "dist/instructions": ".github/instructions",
+    "dist/skills": ".github/skills",
+    "dist/issue-templates": ".github/ISSUE_TEMPLATE",
 }
 
 SINGLE_FILE_MAPPING: dict[str, str] = {
-    "PULL_REQUEST_TEMPLATE.md": ".github/PULL_REQUEST_TEMPLATE.md",
+    "dist/PULL_REQUEST_TEMPLATE.md": ".github/PULL_REQUEST_TEMPLATE.md",
 }
 
 # Never sync or clean these target directories

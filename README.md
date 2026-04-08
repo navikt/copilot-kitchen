@@ -39,7 +39,7 @@ Kjør manuelt: `Actions` > `Copilot Config Sync` > `Run workflow`.
 | `backend` | kotlin | api-design, auth-overview, flyway-migration, kafka-topic, kotlin-ktor, kotlin-spring, postgresql-review |
 | `frontend` | accessibility | aksel-design, auth-overview, lumi-survey |
 
-Alle collections inkluderer også 7 agenter, 6 issue-maler og PR-mal.
+Alle collections inkluderer også 6 agenter, 6 issue-maler og PR-mal.
 
 Eksempler:
 - `["backend"]` — backend-repo (common inkluderes automatisk)
@@ -50,12 +50,14 @@ Eksempler:
 ## Hva som synkes
 
 ```
-agents/           → .github/agents/         (7 agenter, multi-agent-pipeline)
-instructions/     → .github/instructions/   (auto-lastes basert på applyTo-mønster)
-skills/           → .github/skills/         (on-demand, lastes ved behov)
-issue-templates/  → .github/ISSUE_TEMPLATE/
-PULL_REQUEST_TEMPLATE.md → .github/PULL_REQUEST_TEMPLATE.md
+dist/agents/           → .github/agents/         (6 agenter, multi-agent-pipeline)
+dist/instructions/     → .github/instructions/   (auto-lastes basert på applyTo-mønster)
+dist/skills/           → .github/skills/         (on-demand, lastes ved behov)
+dist/issue-templates/  → .github/ISSUE_TEMPLATE/
+dist/PULL_REQUEST_TEMPLATE.md → .github/PULL_REQUEST_TEMPLATE.md
 ```
+
+Alt under `dist/` synkes til consumer-repos. Alt utenfor (`.github/`, `scripts/`, `collections.yml`) er repoets egen infrastruktur.
 
 ### Instructions vs skills
 

@@ -63,8 +63,9 @@ Når Hovmester ber deg grille en plan:
 
 1. Ta høyde for repo-instruksjoner og vurder endringene mot etablerte mønstre i kodebasen.
 2. Forstå hva endringene prøver å løse
-3. Inspiser bugs, sikkerhet, kanttilfeller, regresjoner, arkitektur og feilhåndtering
-4. Rapporter funn
+3. Gi 🔴-filer (auth, sikkerhet, hemmeligheter, schema-migrering) ekstra gransking
+4. Inspiser bugs, sikkerhet, kanttilfeller, regresjoner, arkitektur og feilhåndtering
+5. Rapporter funn
 
 ## Obligatorisk output-format
 
