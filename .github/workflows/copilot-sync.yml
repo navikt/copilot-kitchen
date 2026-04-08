@@ -2,11 +2,6 @@ name: Copilot Config Sync
 
 # Reusable workflow that syncs copilot customization files from copilot-kitchen.
 #
-# Configuration: either pass collections/exclude as workflow inputs, or place a
-# .github/copilot-sync.json in the target repo:
-#   {"collections": ["common", "backend"], "exclude": ["tech-stack"]}
-# Workflow inputs override copilot-sync.json values.
-#
 # Creates a PR with changed files. If APP_PRIVATE_KEY is provided, the PR is
 # auto-approved and queued for merge — same pattern as dependabot-automerge.
 #

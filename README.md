@@ -1,8 +1,10 @@
 # copilot-kitchen
 
-Copilot customization files (agents, skills, instructions) distributed via a reusable GitHub Actions workflow.
+Distribuerer Copilot-tilpasninger (agenter, skills, instructions) til teamets repoer via GitHub Actions.
 
-## Quick start
+## Kom i gang
+
+Legg til workflowen i repoet ditt:
 
 ```yaml
 # .github/workflows/copilot-sync.yml
@@ -15,67 +17,78 @@ jobs:
   sync:
     uses: navikt/copilot-kitchen/.github/workflows/copilot-sync.yml@main
     with:
-      collections: "common,backend"  # Or "common,frontend", or omit for all
+      collections: "common,backend"   # Eller "common,frontend", eller utelat for alt
+      # exclude: "tech-stack"         # Valgfritt — hopp over enkeltfiler
     secrets:
-      APP_PRIVATE_KEY: ${{ secrets.AUTOMERGE_APP_PRIVATE_KEY }}  # Optional: enables auto-merge
+      APP_PRIVATE_KEY: ${{ secrets.AUTOMERGE_APP_PRIVATE_KEY }}  # Valgfritt — gir auto-merge
     permissions:
       contents: write
       pull-requests: write
 ```
 
-Run manually: `Actions` > `Copilot Config Sync` > `Run workflow`.
+Kjør manuelt: `Actions` > `Copilot Config Sync` > `Run workflow`.
 
-**With `APP_PRIVATE_KEY`:** PR is created, approved, and queued for merge automatically.
-**Without:** PR is created but requires manual review and merge.
+**Med `APP_PRIVATE_KEY`:** PR opprettes, godkjennes og merges automatisk.
+**Uten:** PR opprettes, men krever manuell review og merge.
 
 ## Collections
 
-| Collection | Content |
-|---|---|
-| `common` | Agents, security instructions, docker, github-actions, nais-manifest, observability-setup, and process skills. Always included. |
-| `backend` | Kotlin instructions + backend skills (api-design, kafka-topic, flyway-migration, etc.) |
-| `frontend` | Frontend skills (aksel-design, accessibility, lumi-survey, etc.) |
+| Collection | Instructions | Skills |
+|---|---|---|
+| `common` (alltid inkludert) | security, docker, github-actions | brainstorm, conventional-commit, grill-me, nais-manifest, observability-setup, issue-management, klarsprak, pull-request, security-review, tdd, tech-stack |
+| `backend` | kotlin | api-design, auth-overview, flyway-migration, kafka-topic, kotlin-ktor, kotlin-spring, postgresql-review |
+| `frontend` | accessibility | aksel-design, auth-overview, lumi-survey |
 
-Examples:
-- `collections: "common,backend"` — backend repo
-- `collections: "common,frontend"` — frontend repo
-- `collections: "common,backend,frontend"` — fullstack repo
-- Omit `collections` — get all files
+Alle collections inkluderer også 7 agenter, 6 issue-maler og PR-mal.
 
-### Exclude
+Eksempler:
+- `["backend"]` — backend-repo (common inkluderes automatisk)
+- `["frontend"]` — frontend-repo
+- `["backend", "frontend"]` — fullstack-repo
+- Utelat — alle filer synkes
 
-```yaml
-exclude: "tech-stack,kafka-topic"  # Skip these regardless of collections
+## Hva som synkes
+
+```
+agents/           → .github/agents/         (7 agenter, multi-agent-pipeline)
+instructions/     → .github/instructions/   (auto-lastes basert på applyTo-mønster)
+skills/           → .github/skills/         (on-demand, lastes ved behov)
+issue-templates/  → .github/ISSUE_TEMPLATE/
+PULL_REQUEST_TEMPLATE.md → .github/PULL_REQUEST_TEMPLATE.md
 ```
 
-## What gets synced
+### Instructions vs skills
 
-- **Agents** — Multi-agent orchestration pipeline (hovmester, souschef, kokk, konditor, mattilsynet, inspektorer)
-- **Skills** — 23 on-demand skills (lazy-loaded by Copilot CLI)
-- **Instructions** — Minimal always-loaded guidance (security, kotlin)
-- **Issue templates** and **PR template**
+**Instructions** lastes automatisk når du redigerer matchende filer:
+- `security.instructions.md` → alle filer
+- `docker.instructions.md` → Dockerfiler
+- `github-actions.instructions.md` → workflow-filer
+- `kotlin.instructions.md` → Kotlin-filer (refererer til kotlin-spring/ktor-skills)
+- `accessibility.instructions.md` → React-komponenter
+
+**Skills** lastes on-demand for spesifikke oppgaver — detaljert veiledning, generering eller review.
 
 ## Auto-merge
 
-Requires `AUTOMERGE_APP_PRIVATE_KEY` as an **Actions secret** (not Dependabot secret). The workflow uses three tokens:
+Krever `AUTOMERGE_APP_PRIVATE_KEY` som **Actions secret** (ikke Dependabot secret). Workflowen bruker tre tokens:
 
-1. **App token** creates the PR (triggers build via push event)
-2. **GITHUB_TOKEN** approves the PR (different actor than the app)
-3. **App token** enables auto-merge (triggers merge queue)
+1. **App-token** oppretter PR (trigger build via push)
+2. **GITHUB_TOKEN** godkjenner PR (annen aktør enn appen)
+3. **App-token** aktiverer auto-merge (trigger merge queue)
 
-This is the same constraint Dependabot faces — no single token can do all three.
+Samme begrensning som Dependabot — ingen enkelt-token kan gjøre alle tre.
 
-## Migrating from esyfo-cli
+## Migrering fra esyfo-cli
 
-1. Add the workflow above and run manually
-2. First sync overwrites old files and cleans up legacy `Managed by esyfo-cli` files
-3. Delete `.github/workflows/copilot-config-auto-approve.yml` (no longer needed)
-4. Add `AUTOMERGE_APP_PRIVATE_KEY` as Actions secret for auto-merge
+1. Legg til workflowen over og kjør manuelt
+2. Første sync overskriver gamle filer og rydder opp `Managed by esyfo-cli`-filer
+3. Slett `.github/workflows/copilot-config-auto-approve.yml` (ikke lenger nødvendig)
+4. Legg til `AUTOMERGE_APP_PRIVATE_KEY` som Actions secret
 
-## How it works
+## Slik fungerer det
 
-1. Shallow-clones this repo
-2. Resolves files from collections (or all if not specified)
-3. Compares SHA-256 hashes, copies changed/new files, removes stale via manifest
-4. Creates or updates PR on `copilot-config-sync` branch
-5. (If secret provided) Approves and queues for merge
+1. Kloner dette repoet (shallow)
+2. Velger filer basert på collections (eller alle hvis ikke spesifisert)
+4. Sammenligner SHA-256-hasher, kopierer endrede filer, fjerner utdaterte via manifest
+5. Oppretter eller oppdaterer PR på `copilot-config-sync`-branch
+6. Godkjenner og merger automatisk (hvis secret er konfigurert)

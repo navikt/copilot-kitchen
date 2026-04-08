@@ -6,11 +6,9 @@ import json
 from pathlib import Path
 
 from sync import (
-    CONFIG_PATH,
     LEGACY_MARKER,
     MANIFEST_PATH,
     SyncDiff,
-    _config_value_to_str,
     apply_sync,
     build_file_mapping,
     compute_diff,
@@ -19,7 +17,6 @@ from sync import (
     find_stale_by_manifest,
     find_stale_legacy,
     read_manifest,
-    read_target_config,
     resolve_collections,
     write_manifest,
 )
@@ -489,50 +486,3 @@ class TestExclude:
         assert ".github/skills/kafka-topic/SKILL.md" not in mapping  # excluded
 
 
-# ---------------------------------------------------------------------------
-# Target config (copilot-sync.json)
-# ---------------------------------------------------------------------------
-
-
-class TestTargetConfig:
-    def test_reads_json_config(self, tmp_path: Path) -> None:
-        _write(
-            tmp_path / CONFIG_PATH,
-            json.dumps({"collections": ["common", "backend"], "exclude": ["tech-stack"]}),
-        )
-        config = read_target_config(tmp_path)
-        assert config["collections"] == ["common", "backend"]
-        assert config["exclude"] == ["tech-stack"]
-
-    def test_returns_empty_when_missing(self, tmp_path: Path) -> None:
-        assert read_target_config(tmp_path) == {}
-
-    def test_returns_empty_when_corrupt(self, tmp_path: Path) -> None:
-        _write(tmp_path / CONFIG_PATH, "not json{{{")
-        assert read_target_config(tmp_path) == {}
-
-    def test_handles_string_format(self, tmp_path: Path) -> None:
-        _write(
-            tmp_path / CONFIG_PATH,
-            json.dumps({"collections": "common,backend"}),
-        )
-        config = read_target_config(tmp_path)
-        assert config["collections"] == "common,backend"
-
-    def test_config_value_to_str_list(self) -> None:
-        assert _config_value_to_str(["common", "backend"]) == "common,backend"
-
-    def test_config_value_to_str_string(self) -> None:
-        assert _config_value_to_str("common,backend") == "common,backend"
-
-    def test_config_value_to_str_none(self) -> None:
-        assert _config_value_to_str(None) is None
-
-    def test_config_value_to_str_strips_whitespace(self) -> None:
-        assert _config_value_to_str(["common", " backend "]) == "common,backend"
-
-    def test_config_value_to_str_rejects_non_strings(self) -> None:
-        assert _config_value_to_str([1, True, None]) is None
-
-    def test_config_value_to_str_filters_mixed(self) -> None:
-        assert _config_value_to_str(["common", 42, "backend"]) == "common,backend"

@@ -5,7 +5,7 @@ Distribusjonsrepo for GitHub Copilot-tilpasninger (agenter, instructions, skills
 ## Arkitektur
 
 ### Pull-basert sync
-Consumer-repos kaller en reusable workflow (`copilot-sync.yml`) som shallow-kloner dette repoet, kjører `scripts/sync.py`, og oppretter PR med endringer. Konfigurasjon via `.github/copilot-sync.json` i consumer-repoet eller workflow-inputs.
+Consumer-repos kaller en reusable workflow (`copilot-sync.yml`) som shallow-kloner dette repoet, kjører `scripts/sync.py`, og oppretter PR med endringer. Konfigurasjon via workflow-inputs (`collections`, `exclude`).
 
 ### Filstruktur
 

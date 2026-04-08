@@ -445,40 +445,6 @@ def apply_sync(
 
 
 # ---------------------------------------------------------------------------
-# Target config (.github/copilot-sync.json)
-# ---------------------------------------------------------------------------
-
-
-CONFIG_PATH = ".github/copilot-sync.json"
-
-
-def read_target_config(target_root: Path) -> dict:
-    """Read optional .github/copilot-sync.json from target repo.
-
-    Supports both string and list formats for collections/exclude:
-      {"collections": "common,backend"} or {"collections": ["common", "backend"]}
-    """
-    config_path = target_root / CONFIG_PATH
-    if not config_path.exists():
-        return {}
-    try:
-        data = json.loads(config_path.read_text(encoding="utf-8"))
-        return data if isinstance(data, dict) else {}
-    except (json.JSONDecodeError, OSError):
-        return {}
-
-
-def _config_value_to_str(value: str | list | None) -> str | None:
-    """Normalize a config value (string or list) to a comma-separated string."""
-    if value is None:
-        return None
-    if isinstance(value, list):
-        items = [str(v).strip() for v in value if isinstance(v, str)]
-        return ",".join(items) if items else None
-    return str(value)
-
-
-# ---------------------------------------------------------------------------
 # CLI
 # ---------------------------------------------------------------------------
 
@@ -526,21 +492,12 @@ def main() -> None:
 
     mapping = build_file_mapping(source)
 
-    # Read target config — CLI args override copilot-sync.json values
-    target_config = read_target_config(target)
-    collections_input = args.collections or _config_value_to_str(
-        target_config.get("collections")
-    )
-    exclude_input = args.exclude or _config_value_to_str(
-        target_config.get("exclude")
-    )
-
     # Apply collections filter if specified
-    allowed = resolve_collections(source, collections_input)
+    allowed = resolve_collections(source, args.collections)
     mapping = filter_mapping_by_collections(mapping, allowed)
 
     # Apply exclude filter if specified
-    mapping = filter_mapping_by_exclude(mapping, exclude_input)
+    mapping = filter_mapping_by_exclude(mapping, args.exclude)
 
     diff = apply_sync(mapping, target, source_sha=args.source_sha)
 
