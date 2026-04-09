@@ -1,0 +1,18 @@
+name: Sync hovmester (self)
+on:
+  schedule:
+    - cron: '0 5 * * *'
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['dist/**', 'collections.yml']
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  sync:
+    uses: navikt/hovmester/.github/workflows/hovmester-sync.yml@main
+    with:
+      collections: "hovmester,backend,frontend"
