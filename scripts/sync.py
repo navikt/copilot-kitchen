@@ -77,16 +77,20 @@ def transform_issue_template(content: str, github_project: str) -> str:
     )
 
 
-def build_file_mapping(source: Path) -> dict[str, Path]:
-    """Scan source directories and return {target_rel_path: source_abs_path}.
+def build_file_mapping(source: Path) -> dict[str, tuple[Path, str]]:
+    """Scan source directories and return {target_rel: (source_abs, source_rel)}.
 
     DIR_MAPPING entries are scanned recursively (important for skills/
     which contains references/ subdirectories).
     SINGLE_FILE_MAPPING entries are checked individually.
     Nothing under EXCLUDED_TARGET_DIRS is ever included.
     Symlinks are skipped to prevent traversal and infinite loops.
+
+    The source_rel is the path relative to the source repo root (e.g.
+    'dist/agents/hovmester.agent.md'), needed by _read_source_content
+    to decide whether to apply template transforms.
     """
-    mapping: dict[str, Path] = {}
+    mapping: dict[str, tuple[Path, str]] = {}
 
     for src_dir_name, tgt_dir in DIR_MAPPING.items():
         src_dir = source / src_dir_name
@@ -101,7 +105,8 @@ def build_file_mapping(source: Path) -> dict[str, Path]:
             target_rel = f"{tgt_dir}/{rel}"
             if any(target_rel.startswith(excl) for excl in EXCLUDED_TARGET_DIRS):
                 continue
-            mapping[target_rel] = src_file
+            source_rel = f"{src_dir_name}/{rel}"
+            mapping[target_rel] = (src_file, source_rel)
 
     for src_name, tgt_rel in SINGLE_FILE_MAPPING.items():
         src_file = source / src_name
@@ -110,7 +115,7 @@ def build_file_mapping(source: Path) -> dict[str, Path]:
         if src_file.is_file():
             if any(tgt_rel.startswith(excl) for excl in EXCLUDED_TARGET_DIRS):
                 continue
-            mapping[tgt_rel] = src_file
+            mapping[tgt_rel] = (src_file, src_name)
 
     return mapping
 
@@ -136,18 +141,30 @@ def _read_source_content(
     return content
 
 
-def _sha256(path: Path) -> str:
-    return hashlib.sha256(path.read_bytes()).hexdigest()
+def _sha256(data: bytes) -> str:
+    return hashlib.sha256(data).hexdigest()
 
 
-def compute_diff(mapping: dict[str, Path], target_root: Path) -> SyncDiff:
-    """Compare SHA-256 hashes of source vs target files."""
+def compute_diff(
+    mapping: dict[str, tuple[Path, str]],
+    target_root: Path,
+    github_project: str = "",
+) -> SyncDiff:
+    """Compare SHA-256 hashes of source vs target files.
+
+    The source content is read via _read_source_content so that
+    issue-template transforms are applied before hashing — without
+    this, templates would always be detected as 'changed' because
+    the target file contains the substituted project ID while the
+    raw source file still contains the placeholder.
+    """
     diff = SyncDiff()
-    for target_rel, source_path in mapping.items():
+    for target_rel, (source_path, source_rel) in mapping.items():
         target_path = target_root / target_rel
+        source_content = _read_source_content(source_path, source_rel, github_project)
         if not target_path.exists():
             diff.added.append(target_rel)
-        elif _sha256(source_path) != _sha256(target_path):
+        elif _sha256(source_content) != _sha256(target_path.read_bytes()):
             diff.changed.append(target_rel)
         else:
             diff.unchanged.append(target_rel)
@@ -203,13 +220,14 @@ def resolve_collections(
 
 
 def filter_mapping_by_collections(
-    mapping: dict[str, Path], allowed: dict[str, set[str]] | None
-) -> dict[str, Path]:
+    mapping: dict[str, tuple[Path, str]],
+    allowed: dict[str, set[str]] | None,
+) -> dict[str, tuple[Path, str]]:
     """Filter a file mapping based on resolved collections."""
     if allowed is None:
         return mapping
 
-    filtered: dict[str, Path] = {}
+    filtered: dict[str, tuple[Path, str]] = {}
     for target_rel, source_path in mapping.items():
         if _file_allowed_by_collections(target_rel, allowed):
             filtered[target_rel] = source_path
@@ -217,8 +235,9 @@ def filter_mapping_by_collections(
 
 
 def filter_mapping_by_exclude(
-    mapping: dict[str, Path], exclude_input: str | None
-) -> dict[str, Path]:
+    mapping: dict[str, tuple[Path, str]],
+    exclude_input: str | None,
+) -> dict[str, tuple[Path, str]]:
     """Remove files matching exclude names from the mapping.
 
     Exclude names are matched against:
@@ -232,7 +251,7 @@ def filter_mapping_by_exclude(
 
     excluded = {name.strip() for name in exclude_input.split(",")}
 
-    filtered: dict[str, Path] = {}
+    filtered: dict[str, tuple[Path, str]] = {}
     for target_rel, source_path in mapping.items():
         if _file_excluded(target_rel, excluded):
             continue
@@ -429,7 +448,7 @@ def _find_extra_files_in_owned_skills(
 
 
 def apply_sync(
-    mapping: dict[str, Path], target_root: Path, source_sha: str = ""
+    mapping: dict[str, tuple[Path, str]], target_root: Path, source_sha: str = ""
 ) -> SyncDiff:
     """Apply the full sync: copy new/changed, remove stale, write manifest."""
     diff = compute_diff(mapping, target_root)
@@ -438,7 +457,7 @@ def apply_sync(
     # Copy added and changed files
     failed: set[str] = set()
     for target_rel in diff.added + diff.changed:
-        source_path = mapping[target_rel]
+        source_path, _source_rel = mapping[target_rel]
         target_path = target_root / target_rel
         target_path.parent.mkdir(parents=True, exist_ok=True)
         try:

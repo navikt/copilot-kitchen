@@ -86,7 +86,9 @@ class TestComputeDiff:
         tgt = tmp_path / "tgt"
         _write(src, "new")
         tgt.mkdir()
-        diff = compute_diff({".github/agents/new.md": src}, tgt)
+        diff = compute_diff(
+            {".github/agents/new.md": (src, "dist/agents/new.md")}, tgt
+        )
         assert ".github/agents/new.md" in diff.added
 
     def test_detects_changed_file(self, tmp_path: Path) -> None:
@@ -94,7 +96,9 @@ class TestComputeDiff:
         tgt = tmp_path / "tgt"
         _write(src, "v2")
         _write(tgt / ".github" / "agents" / "a.md", "v1")
-        diff = compute_diff({".github/agents/a.md": src}, tgt)
+        diff = compute_diff(
+            {".github/agents/a.md": (src, "dist/agents/a.md")}, tgt
+        )
         assert ".github/agents/a.md" in diff.changed
 
     def test_skips_unchanged_file(self, tmp_path: Path) -> None:
@@ -102,7 +106,9 @@ class TestComputeDiff:
         tgt = tmp_path / "tgt"
         _write(src, "same")
         _write(tgt / ".github" / "agents" / "a.md", "same")
-        diff = compute_diff({".github/agents/a.md": src}, tgt)
+        diff = compute_diff(
+            {".github/agents/a.md": (src, "dist/agents/a.md")}, tgt
+        )
         assert ".github/agents/a.md" in diff.unchanged
         assert not diff.added and not diff.changed
 
