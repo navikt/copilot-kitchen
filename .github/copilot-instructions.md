@@ -1,11 +1,11 @@
-# copilot-kitchen
+# hovmester
 
-Distribusjonsrepo for GitHub Copilot-tilpasninger (agenter, instructions, skills) til Team eSyfos repositories via GitHub Actions.
+Distribusjonsrepo for GitHub Copilot-tilpasninger (agenter, instructions, skills) til Nav-teamenes repositories via GitHub Actions.
 
 ## Arkitektur
 
 ### Pull-basert sync
-Consumer-repos kaller en reusable workflow (`copilot-sync.yml`) som shallow-kloner dette repoet, kjører `scripts/sync.py`, og oppretter PR med endringer. Konfigurasjon via workflow-inputs (`collections`, `exclude`).
+Consumer-repos kaller en reusable workflow (`hovmester-sync.yml`) som shallow-kloner dette repoet, kjører `scripts/sync.py`, og oppretter PR med endringer. Konfigurasjon via workflow-inputs (`collections`, `exclude`, `github_project`, `automerge_app_id`).
 
 ### Filstruktur
 
@@ -22,7 +22,7 @@ scripts/               (sync-verktøy, synkes ikke)
 ```
 
 ### Collections
-`collections.yml` grupperer filer i navngitte samlinger (`common`, `backend`, `frontend`). `common` inkluderes alltid implisitt. Consumer-repos velger samlinger og kan ekskludere enkeltfiler.
+`collections.yml` grupperer filer i navngitte samlinger (`hovmester`, `backend`, `frontend`). `hovmester` inkluderes alltid implisitt og bundler agenter, Nav-brede instruksjoner, generiske skills og standard issue templates. Consumer-repos velger samlinger og kan ekskludere enkeltfiler med `exclude`-input.
 
 ## Instruction vs Skill — når bruke hva
 
@@ -70,7 +70,7 @@ Bruk kortnavn uten filendelse: `hovmester` (ikke `hovmester.agent.md`), `securit
 - Norsk innhold i instruksjoner/skills (teamets arbeidsspråk)
 
 ### Manifest og cleanup
-Sync-scriptet skriver `.copilot-kitchen-manifest.json` i target-repo for å spore synkede filer. Stale filer fjernes automatisk. Consumer-repoer skal ikke redigere synkede filer.
+Sync-scriptet skriver `.hovmester-manifest.json` i target-repo for å spore synkede filer. Stale filer fjernes automatisk. Consumer-repoer skal ikke redigere synkede filer. Repoer som tidligere brukte `.copilot-kitchen-manifest.json` migreres automatisk til det nye navnet ved første sync.
 
 ## Kommandoer
 
@@ -82,9 +82,9 @@ cd scripts && python3 -m pytest test_sync.py -v
 python3 scripts/sync.py --source . --target /path/to/repo --output /tmp/result.json
 
 # Med collections
-python3 scripts/sync.py --source . --target /path/to/repo --output /tmp/result.json --collections "common,backend"
+python3 scripts/sync.py --source . --target /path/to/repo --output /tmp/result.json --collections "hovmester,backend"
 ```
 
 ## Upstream-referanse
 
-Team eSyfo vedlikeholder copilot-kitchen uavhengig, men sjekker jevnlig `navikt/copilot` for nye mønstre, instruksjoner og skills som er verdt å adoptere. Se `.github/skills/copilot-upstream-sync/SKILL.md` for strukturert gjennomgang (ligger i `.github/skills/`, ikke `skills/`, så den synkes ikke til consumer-repos).
+Hovmester vedlikeholdes Nav-bredt, men sjekker jevnlig `navikt/copilot` for nye mønstre, instruksjoner og skills som er verdt å adoptere. Se `.github/skills/copilot-upstream-sync/SKILL.md` for strukturert gjennomgang (ligger i `.github/skills/`, ikke `dist/skills/`, så den synkes ikke til consumer-repos).

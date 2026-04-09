@@ -1,7 +1,7 @@
 name: Epic
 description: Stor oppgave som brytes ned i deloppgaver
 type: Epic
-projects: ["navikt/157"]
+projects: ["${GITHUB_PROJECT}"]
 body:
   - type: textarea
     id: goal

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Sync copilot-kitchen source files to target repositories.
+"""Sync hovmester source files to target repositories.
 
 Compares files, copies new/changed ones, removes stale files via manifest,
 and outputs a JSON result for the GitHub Actions workflow.
@@ -10,7 +10,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
-import shutil
+import re
 import sys
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
@@ -21,7 +21,8 @@ import yaml
 # Constants
 # ---------------------------------------------------------------------------
 
-MANIFEST_PATH = ".github/.copilot-kitchen-manifest.json"
+MANIFEST_PATH = ".github/.hovmester-manifest.json"
+LEGACY_MANIFEST_PATH = ".github/.copilot-kitchen-manifest.json"
 LEGACY_MARKER = "Managed by esyfo-cli"
 
 DIR_MAPPING: dict[str, str] = {
@@ -56,16 +57,40 @@ class SyncDiff:
 # ---------------------------------------------------------------------------
 
 
-def build_file_mapping(source: Path) -> dict[str, Path]:
-    """Scan source directories and return {target_rel_path: source_abs_path}.
+def transform_issue_template(content: str, github_project: str) -> str:
+    """Substitute or strip the ${GITHUB_PROJECT} placeholder in issue templates.
+
+    Template files under dist/issue-templates/ MUST use the exact format:
+        projects: ["${GITHUB_PROJECT}"]
+    (double quotes, no extra whitespace inside the brackets). The stripping
+    regex is tied to this format — if the template format changes, update
+    the regex accordingly.
+    """
+    if github_project:
+        return content.replace("${GITHUB_PROJECT}", github_project)
+    # Strip the entire projects line when no project is configured
+    return re.sub(
+        r'^projects:\s*\["\$\{GITHUB_PROJECT\}"\]\s*\n',
+        '',
+        content,
+        flags=re.MULTILINE,
+    )
+
+
+def build_file_mapping(source: Path) -> dict[str, tuple[Path, str]]:
+    """Scan source directories and return {target_rel: (source_abs, source_rel)}.
 
     DIR_MAPPING entries are scanned recursively (important for skills/
     which contains references/ subdirectories).
     SINGLE_FILE_MAPPING entries are checked individually.
     Nothing under EXCLUDED_TARGET_DIRS is ever included.
     Symlinks are skipped to prevent traversal and infinite loops.
+
+    The source_rel is the path relative to the source repo root (e.g.
+    'dist/agents/hovmester.agent.md'), needed by _read_source_content
+    to decide whether to apply template transforms.
     """
-    mapping: dict[str, Path] = {}
+    mapping: dict[str, tuple[Path, str]] = {}
 
     for src_dir_name, tgt_dir in DIR_MAPPING.items():
         src_dir = source / src_dir_name
@@ -80,7 +105,8 @@ def build_file_mapping(source: Path) -> dict[str, Path]:
             target_rel = f"{tgt_dir}/{rel}"
             if any(target_rel.startswith(excl) for excl in EXCLUDED_TARGET_DIRS):
                 continue
-            mapping[target_rel] = src_file
+            source_rel = f"{src_dir_name}/{rel}"
+            mapping[target_rel] = (src_file, source_rel)
 
     for src_name, tgt_rel in SINGLE_FILE_MAPPING.items():
         src_file = source / src_name
@@ -89,23 +115,56 @@ def build_file_mapping(source: Path) -> dict[str, Path]:
         if src_file.is_file():
             if any(tgt_rel.startswith(excl) for excl in EXCLUDED_TARGET_DIRS):
                 continue
-            mapping[tgt_rel] = src_file
+            mapping[tgt_rel] = (src_file, src_name)
 
     return mapping
 
 
-def _sha256(path: Path) -> str:
-    return hashlib.sha256(path.read_bytes()).hexdigest()
+def _read_source_content(
+    source_path: Path, source_rel: str, github_project: str
+) -> bytes:
+    """Read source file content, applying template transforms where applicable.
+
+    For files under dist/issue-templates/ with a .yml or .yaml extension,
+    applies transform_issue_template() to substitute or strip the
+    ${GITHUB_PROJECT} placeholder. All other files are returned as raw bytes.
+
+    source_rel is the path relative to the source repo root (e.g.
+    'dist/issue-templates/bug.yml'), used to decide whether to apply
+    transforms. It is NOT the target path.
+    """
+    content = source_path.read_bytes()
+    if source_rel.startswith("dist/issue-templates/") and source_path.suffix in (".yml", ".yaml"):
+        text = content.decode("utf-8")
+        transformed = transform_issue_template(text, github_project)
+        return transformed.encode("utf-8")
+    return content
 
 
-def compute_diff(mapping: dict[str, Path], target_root: Path) -> SyncDiff:
-    """Compare SHA-256 hashes of source vs target files."""
+def _sha256(data: bytes) -> str:
+    return hashlib.sha256(data).hexdigest()
+
+
+def compute_diff(
+    mapping: dict[str, tuple[Path, str]],
+    target_root: Path,
+    github_project: str = "",
+) -> SyncDiff:
+    """Compare SHA-256 hashes of source vs target files.
+
+    The source content is read via _read_source_content so that
+    issue-template transforms are applied before hashing — without
+    this, templates would always be detected as 'changed' because
+    the target file contains the substituted project ID while the
+    raw source file still contains the placeholder.
+    """
     diff = SyncDiff()
-    for target_rel, source_path in mapping.items():
+    for target_rel, (source_path, source_rel) in mapping.items():
         target_path = target_root / target_rel
+        source_content = _read_source_content(source_path, source_rel, github_project)
         if not target_path.exists():
             diff.added.append(target_rel)
-        elif _sha256(source_path) != _sha256(target_path):
+        elif _sha256(source_content) != _sha256(target_path.read_bytes()):
             diff.changed.append(target_rel)
         else:
             diff.unchanged.append(target_rel)
@@ -134,8 +193,8 @@ def resolve_collections(
     collections_data = yaml.safe_load(collections_path.read_text(encoding="utf-8")) or {}
     requested = {c.strip() for c in collections_input.split(",")}
 
-    # common is always included
-    requested.add("common")
+    # hovmester is always included
+    requested.add("hovmester")
 
     allowed: dict[str, set[str]] = {
         "agents": set(),
@@ -161,13 +220,14 @@ def resolve_collections(
 
 
 def filter_mapping_by_collections(
-    mapping: dict[str, Path], allowed: dict[str, set[str]] | None
-) -> dict[str, Path]:
+    mapping: dict[str, tuple[Path, str]],
+    allowed: dict[str, set[str]] | None,
+) -> dict[str, tuple[Path, str]]:
     """Filter a file mapping based on resolved collections."""
     if allowed is None:
         return mapping
 
-    filtered: dict[str, Path] = {}
+    filtered: dict[str, tuple[Path, str]] = {}
     for target_rel, source_path in mapping.items():
         if _file_allowed_by_collections(target_rel, allowed):
             filtered[target_rel] = source_path
@@ -175,8 +235,9 @@ def filter_mapping_by_collections(
 
 
 def filter_mapping_by_exclude(
-    mapping: dict[str, Path], exclude_input: str | None
-) -> dict[str, Path]:
+    mapping: dict[str, tuple[Path, str]],
+    exclude_input: str | None,
+) -> dict[str, tuple[Path, str]]:
     """Remove files matching exclude names from the mapping.
 
     Exclude names are matched against:
@@ -190,7 +251,7 @@ def filter_mapping_by_exclude(
 
     excluded = {name.strip() for name in exclude_input.split(",")}
 
-    filtered: dict[str, Path] = {}
+    filtered: dict[str, tuple[Path, str]] = {}
     for target_rel, source_path in mapping.items():
         if _file_excluded(target_rel, excluded):
             continue
@@ -253,6 +314,23 @@ def _file_allowed_by_collections(
 # ---------------------------------------------------------------------------
 
 
+def migrate_legacy_manifest(target_root: Path) -> None:
+    """One-time migration from copilot-kitchen manifest to hovmester manifest.
+
+    If the legacy manifest (.copilot-kitchen-manifest.json) exists and the
+    new hovmester manifest does not, move the legacy file to the new path.
+    If the new manifest already exists, leave both files alone (this lets
+    the user clean up the orphaned legacy file manually once they are sure
+    the new manifest is authoritative).
+    """
+    legacy = target_root / LEGACY_MANIFEST_PATH
+    new = target_root / MANIFEST_PATH
+    if legacy.exists() and not new.exists():
+        new.parent.mkdir(parents=True, exist_ok=True)
+        new.write_bytes(legacy.read_bytes())
+        legacy.unlink()
+
+
 def read_manifest(target_root: Path) -> list[str] | None:
     """Read the manifest file. Returns None if it doesn't exist or is corrupt."""
     manifest_path = target_root / MANIFEST_PATH
@@ -270,7 +348,7 @@ def write_manifest(target_root: Path, files: list[str], source_sha: str = "") ->
     manifest_path = target_root / MANIFEST_PATH
     manifest_path.parent.mkdir(parents=True, exist_ok=True)
     data = {
-        "source": "navikt/copilot-kitchen",
+        "source": "navikt/hovmester",
         "source_sha": source_sha,
         "files": sorted(files),
     }
@@ -387,20 +465,25 @@ def _find_extra_files_in_owned_skills(
 
 
 def apply_sync(
-    mapping: dict[str, Path], target_root: Path, source_sha: str = ""
+    mapping: dict[str, tuple[Path, str]],
+    target_root: Path,
+    source_sha: str = "",
+    github_project: str = "",
 ) -> SyncDiff:
     """Apply the full sync: copy new/changed, remove stale, write manifest."""
-    diff = compute_diff(mapping, target_root)
+    migrate_legacy_manifest(target_root)
+    diff = compute_diff(mapping, target_root, github_project)
     current_files = set(mapping.keys())
 
-    # Copy added and changed files
+    # Copy added and changed files (via helper so template transforms apply)
     failed: set[str] = set()
     for target_rel in diff.added + diff.changed:
-        source_path = mapping[target_rel]
+        source_path, source_rel = mapping[target_rel]
         target_path = target_root / target_rel
         target_path.parent.mkdir(parents=True, exist_ok=True)
         try:
-            shutil.copy2(source_path, target_path)
+            content = _read_source_content(source_path, source_rel, github_project)
+            target_path.write_bytes(content)
         except OSError as e:
             print(f"WARNING: Failed to copy {target_rel}: {e}", file=sys.stderr)
             failed.add(target_rel)
@@ -451,11 +534,11 @@ def apply_sync(
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Sync copilot-kitchen files to a target repository."
+        description="Sync hovmester files to a target repository."
     )
     parser.add_argument(
         "--source", type=Path, required=True,
-        help="Path to the copilot-kitchen source checkout.",
+        help="Path to the hovmester source checkout.",
     )
     parser.add_argument(
         "--target", type=Path, required=True,
@@ -476,6 +559,10 @@ def main() -> None:
     parser.add_argument(
         "--exclude", type=str, default=None,
         help="Comma-separated names to exclude (e.g. 'kafka-topic,grill-me').",
+    )
+    parser.add_argument(
+        "--github-project", type=str, default="",
+        help="GitHub project reference (e.g. 'navikt/123') for issue template substitution. If empty, the projects line is stripped from templates.",
     )
     args = parser.parse_args()
 
@@ -499,7 +586,9 @@ def main() -> None:
     # Apply exclude filter if specified
     mapping = filter_mapping_by_exclude(mapping, args.exclude)
 
-    diff = apply_sync(mapping, target, source_sha=args.source_sha)
+    diff = apply_sync(
+        mapping, target, source_sha=args.source_sha, github_project=args.github_project
+    )
 
     result = asdict(diff)
     output.parent.mkdir(parents=True, exist_ok=True)

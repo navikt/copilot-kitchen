@@ -1,7 +1,7 @@
 name: Story
 description: Brukerhistorie eller use case
 type: Story
-projects: ["navikt/157"]
+projects: ["${GITHUB_PROJECT}"]
 body:
   - type: textarea
     id: user-story

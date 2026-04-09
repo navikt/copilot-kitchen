@@ -1,4 +1,4 @@
-"""Tests for sync.py — copilot-kitchen file sync logic."""
+"""Tests for sync.py — hovmester file sync logic."""
 
 from __future__ import annotations
 
@@ -6,6 +6,7 @@ import json
 from pathlib import Path
 
 from sync import (
+    LEGACY_MANIFEST_PATH,
     LEGACY_MARKER,
     MANIFEST_PATH,
     SyncDiff,
@@ -86,7 +87,9 @@ class TestComputeDiff:
         tgt = tmp_path / "tgt"
         _write(src, "new")
         tgt.mkdir()
-        diff = compute_diff({".github/agents/new.md": src}, tgt)
+        diff = compute_diff(
+            {".github/agents/new.md": (src, "dist/agents/new.md")}, tgt
+        )
         assert ".github/agents/new.md" in diff.added
 
     def test_detects_changed_file(self, tmp_path: Path) -> None:
@@ -94,7 +97,9 @@ class TestComputeDiff:
         tgt = tmp_path / "tgt"
         _write(src, "v2")
         _write(tgt / ".github" / "agents" / "a.md", "v1")
-        diff = compute_diff({".github/agents/a.md": src}, tgt)
+        diff = compute_diff(
+            {".github/agents/a.md": (src, "dist/agents/a.md")}, tgt
+        )
         assert ".github/agents/a.md" in diff.changed
 
     def test_skips_unchanged_file(self, tmp_path: Path) -> None:
@@ -102,7 +107,9 @@ class TestComputeDiff:
         tgt = tmp_path / "tgt"
         _write(src, "same")
         _write(tgt / ".github" / "agents" / "a.md", "same")
-        diff = compute_diff({".github/agents/a.md": src}, tgt)
+        diff = compute_diff(
+            {".github/agents/a.md": (src, "dist/agents/a.md")}, tgt
+        )
         assert ".github/agents/a.md" in diff.unchanged
         assert not diff.added and not diff.changed
 
@@ -295,13 +302,34 @@ class TestApplySync:
         assert diff2.removed == []
         assert len(diff2.unchanged) > 0
 
+    def test_migrates_legacy_manifest_on_first_sync(self, tmp_path: Path) -> None:
+        source = tmp_path / "src"
+        target = tmp_path / "tgt"
+        _make_source(source)
+        target.mkdir()
+
+        # Pre-populate target with a legacy manifest
+        legacy = target / LEGACY_MANIFEST_PATH
+        legacy.parent.mkdir(parents=True, exist_ok=True)
+        legacy.write_text(
+            '{"files": [".github/agents/bot.agent.md"]}', encoding="utf-8"
+        )
+
+        mapping = build_file_mapping(source)
+        apply_sync(mapping, target)
+
+        # Legacy manifest should be gone, new manifest should exist
+        assert not legacy.exists()
+        new = target / MANIFEST_PATH
+        assert new.exists()
+
 
 # ---------------------------------------------------------------------------
 # Collections
 # ---------------------------------------------------------------------------
 
 COLLECTIONS_YML = """\
-common:
+hovmester:
   agents:
     - hovmester
     - kokk
@@ -334,7 +362,7 @@ class TestCollections:
         _write(root / "collections.yml", COLLECTIONS_YML)
         _write(root / "dist" / "agents" / "hovmester.agent.md", "hovmester")
         _write(root / "dist" / "agents" / "kokk.agent.md", "kokk")
-        _write(root / "dist" / "agents" / "konditor.agent.md", "konditor")  # NOT in common
+        _write(root / "dist" / "agents" / "konditor.agent.md", "konditor")  # NOT in hovmester
         _write(root / "dist" / "instructions" / "security.instructions.md", "security")
         _write(root / "dist" / "instructions" / "kotlin.instructions.md", "kotlin")
         _write(root / "dist" / "skills" / "brainstorm" / "SKILL.md", "brainstorm")
@@ -345,7 +373,7 @@ class TestCollections:
         _write(root / "dist" / "skills" / "aksel-design" / "references" / "tokens.md", "tokens")
         _write(root / "dist" / "skills" / "accessibility" / "SKILL.md", "a11y")
         _write(root / "dist" / "issue-templates" / "bug.yml", "bug")
-        _write(root / "dist" / "issue-templates" / "feature.yml", "feature")  # NOT in common
+        _write(root / "dist" / "issue-templates" / "feature.yml", "feature")  # NOT in hovmester
         _write(root / "dist" / "PULL_REQUEST_TEMPLATE.md", "pr template")
         return root
 
@@ -356,37 +384,37 @@ class TestCollections:
         filtered = filter_mapping_by_collections(mapping, allowed)
         assert len(filtered) == len(mapping)
 
-    def test_common_only(self, tmp_path: Path) -> None:
+    def test_hovmester_only(self, tmp_path: Path) -> None:
         source = self._make_full_source(tmp_path)
         mapping = build_file_mapping(source)
-        allowed = resolve_collections(source, "common")
+        allowed = resolve_collections(source, "hovmester")
         filtered = filter_mapping_by_collections(mapping, allowed)
 
-        # Should have common agents but NOT konditor
+        # Should have hovmester agents but NOT konditor
         assert ".github/agents/hovmester.agent.md" in filtered
         assert ".github/agents/kokk.agent.md" in filtered
         assert ".github/agents/konditor.agent.md" not in filtered
 
-        # Should have common skills but NOT backend/frontend skills
+        # Should have hovmester skills but NOT backend/frontend skills
         assert ".github/skills/brainstorm/SKILL.md" in filtered
         assert ".github/skills/kafka-topic/SKILL.md" not in filtered
         assert ".github/skills/aksel-design/SKILL.md" not in filtered
 
-        # Should have common instructions but NOT kotlin
+        # Should have hovmester instructions but NOT kotlin
         assert ".github/instructions/security.instructions.md" in filtered
         assert ".github/instructions/kotlin.instructions.md" not in filtered
 
-        # Should have common issue templates but NOT feature
+        # Should have hovmester issue templates but NOT feature
         assert ".github/ISSUE_TEMPLATE/bug.yml" in filtered
         assert ".github/ISSUE_TEMPLATE/feature.yml" not in filtered
 
         # PR template
         assert ".github/PULL_REQUEST_TEMPLATE.md" in filtered
 
-    def test_common_backend(self, tmp_path: Path) -> None:
+    def test_hovmester_backend(self, tmp_path: Path) -> None:
         source = self._make_full_source(tmp_path)
         mapping = build_file_mapping(source)
-        allowed = resolve_collections(source, "common,backend")
+        allowed = resolve_collections(source, "hovmester,backend")
         filtered = filter_mapping_by_collections(mapping, allowed)
 
         # Backend skills included
@@ -397,10 +425,10 @@ class TestCollections:
         # Frontend skills NOT included
         assert ".github/skills/aksel-design/SKILL.md" not in filtered
 
-    def test_common_frontend(self, tmp_path: Path) -> None:
+    def test_hovmester_frontend(self, tmp_path: Path) -> None:
         source = self._make_full_source(tmp_path)
         mapping = build_file_mapping(source)
-        allowed = resolve_collections(source, "common,frontend")
+        allowed = resolve_collections(source, "hovmester,frontend")
         filtered = filter_mapping_by_collections(mapping, allowed)
 
         # Frontend skills included (with references)
@@ -410,14 +438,14 @@ class TestCollections:
         # Backend NOT included
         assert ".github/skills/kafka-topic/SKILL.md" not in filtered
 
-    def test_common_always_implicit(self, tmp_path: Path) -> None:
+    def test_hovmester_always_implicit(self, tmp_path: Path) -> None:
         source = self._make_full_source(tmp_path)
         mapping = build_file_mapping(source)
-        # Only specify "backend" — common should be included implicitly
+        # Only specify "backend" — hovmester should be included implicitly
         allowed = resolve_collections(source, "backend")
         filtered = filter_mapping_by_collections(mapping, allowed)
 
-        assert ".github/agents/hovmester.agent.md" in filtered  # from common
+        assert ".github/agents/hovmester.agent.md" in filtered  # from hovmester
         assert ".github/skills/kafka-topic/SKILL.md" in filtered  # from backend
 
 
@@ -478,11 +506,240 @@ class TestExclude:
         _write(source / "dist" / "PULL_REQUEST_TEMPLATE.md", "pr")
 
         mapping = build_file_mapping(source)
-        allowed = resolve_collections(source, "common,backend")
+        allowed = resolve_collections(source, "hovmester,backend")
         mapping = filter_mapping_by_collections(mapping, allowed)
         mapping = filter_mapping_by_exclude(mapping, "kafka-topic")
 
-        assert ".github/skills/brainstorm/SKILL.md" in mapping  # common
+        assert ".github/skills/brainstorm/SKILL.md" in mapping  # hovmester
         assert ".github/skills/kafka-topic/SKILL.md" not in mapping  # excluded
 
 
+# ---------------------------------------------------------------------------
+# Template transform
+# ---------------------------------------------------------------------------
+
+
+class TestTransformIssueTemplate:
+    def test_substitutes_placeholder_when_project_set(self) -> None:
+        from sync import transform_issue_template
+
+        content = 'name: Bug\nprojects: ["${GITHUB_PROJECT}"]\nbody:\n  - ...\n'
+        result = transform_issue_template(content, "navikt/123")
+        assert 'projects: ["navikt/123"]' in result
+        assert "${GITHUB_PROJECT}" not in result
+
+    def test_strips_projects_line_when_project_empty(self) -> None:
+        from sync import transform_issue_template
+
+        content = 'name: Bug\nprojects: ["${GITHUB_PROJECT}"]\nbody:\n  - ...\n'
+        result = transform_issue_template(content, "")
+        assert "projects:" not in result
+        assert "name: Bug" in result
+        assert "body:" in result
+
+    def test_preserves_surrounding_content(self) -> None:
+        from sync import transform_issue_template
+
+        content = 'name: Bug\ndescription: Report a bug\nprojects: ["${GITHUB_PROJECT}"]\ntype: Bug\n'
+        result = transform_issue_template(content, "navikt/999")
+        assert "name: Bug" in result
+        assert "description: Report a bug" in result
+        assert "type: Bug" in result
+        assert 'projects: ["navikt/999"]' in result
+
+    def test_no_placeholder_content_unchanged(self) -> None:
+        from sync import transform_issue_template
+
+        content = "name: Bug\ndescription: Plain template without projects line\n"
+        result = transform_issue_template(content, "navikt/123")
+        assert result == content
+
+
+# ---------------------------------------------------------------------------
+# Source content reading
+# ---------------------------------------------------------------------------
+
+
+class TestReadSourceContent:
+    def test_reads_non_template_unchanged(self, tmp_path: Path) -> None:
+        from sync import _read_source_content
+
+        src = tmp_path / "agent.md"
+        src.write_bytes(b"# hovmester\nsome content\n")
+        result = _read_source_content(src, "dist/agents/hovmester.agent.md", "navikt/123")
+        assert result == b"# hovmester\nsome content\n"
+
+    def test_transforms_issue_template_with_project(self, tmp_path: Path) -> None:
+        from sync import _read_source_content
+
+        src = tmp_path / "bug.yml"
+        src.write_text(
+            'name: Bug\nprojects: ["${GITHUB_PROJECT}"]\n', encoding="utf-8"
+        )
+        result = _read_source_content(src, "dist/issue-templates/bug.yml", "navikt/999")
+        assert b'projects: ["navikt/999"]' in result
+        assert b"${GITHUB_PROJECT}" not in result
+
+    def test_strips_template_projects_when_empty(self, tmp_path: Path) -> None:
+        from sync import _read_source_content
+
+        src = tmp_path / "bug.yml"
+        src.write_text(
+            'name: Bug\nprojects: ["${GITHUB_PROJECT}"]\nbody:\n', encoding="utf-8"
+        )
+        result = _read_source_content(src, "dist/issue-templates/bug.yml", "")
+        assert b"projects:" not in result
+        assert b"name: Bug" in result
+        assert b"body:" in result
+
+    def test_yaml_templates_transformed(self, tmp_path: Path) -> None:
+        """Both .yml and .yaml extensions are supported."""
+        from sync import _read_source_content
+
+        src = tmp_path / "feature.yaml"
+        src.write_text(
+            'name: Feature\nprojects: ["${GITHUB_PROJECT}"]\n', encoding="utf-8"
+        )
+        result = _read_source_content(src, "dist/issue-templates/feature.yaml", "navikt/42")
+        assert b'projects: ["navikt/42"]' in result
+
+    def test_pr_template_not_transformed(self, tmp_path: Path) -> None:
+        """Files outside dist/issue-templates/ are returned as-is even if they contain the placeholder."""
+        from sync import _read_source_content
+
+        src = tmp_path / "PULL_REQUEST_TEMPLATE.md"
+        src.write_bytes(b"# PR\nProjects: ${GITHUB_PROJECT} (should not change)\n")
+        result = _read_source_content(src, "dist/PULL_REQUEST_TEMPLATE.md", "navikt/123")
+        assert b"${GITHUB_PROJECT}" in result
+
+
+# ---------------------------------------------------------------------------
+# Integration: issue template transform + sync
+# ---------------------------------------------------------------------------
+
+
+class TestSyncWithGithubProject:
+    def _make_template_source(self, root: Path) -> Path:
+        """Create a minimal source with a templated issue template."""
+        _write(
+            root / "dist" / "issue-templates" / "bug.yml",
+            'name: Bug\nprojects: ["${GITHUB_PROJECT}"]\nbody:\n  - question\n',
+        )
+        return root
+
+    def test_substitutes_project_in_written_file(self, tmp_path: Path) -> None:
+        source = tmp_path / "src"
+        target = tmp_path / "tgt"
+        self._make_template_source(source)
+        target.mkdir()
+
+        mapping = build_file_mapping(source)
+        apply_sync(mapping, target, github_project="navikt/123")
+
+        result = (target / ".github" / "ISSUE_TEMPLATE" / "bug.yml").read_text(encoding="utf-8")
+        assert 'projects: ["navikt/123"]' in result
+        assert "${GITHUB_PROJECT}" not in result
+
+    def test_strips_projects_when_empty(self, tmp_path: Path) -> None:
+        source = tmp_path / "src"
+        target = tmp_path / "tgt"
+        self._make_template_source(source)
+        target.mkdir()
+
+        mapping = build_file_mapping(source)
+        apply_sync(mapping, target, github_project="")
+
+        result = (target / ".github" / "ISSUE_TEMPLATE" / "bug.yml").read_text(encoding="utf-8")
+        assert "projects:" not in result
+        assert "name: Bug" in result
+        assert "body:" in result
+
+    def test_idempotent_with_same_project(self, tmp_path: Path) -> None:
+        """Two syncs with the same github_project should report no changes on the second run."""
+        source = tmp_path / "src"
+        target = tmp_path / "tgt"
+        self._make_template_source(source)
+        target.mkdir()
+
+        mapping = build_file_mapping(source)
+        apply_sync(mapping, target, github_project="navikt/42")
+
+        # Second sync — should be fully unchanged
+        diff2 = apply_sync(mapping, target, github_project="navikt/42")
+        assert ".github/ISSUE_TEMPLATE/bug.yml" in diff2.unchanged
+        assert ".github/ISSUE_TEMPLATE/bug.yml" not in diff2.changed
+        assert ".github/ISSUE_TEMPLATE/bug.yml" not in diff2.added
+
+    def test_project_change_detected_as_changed(self, tmp_path: Path) -> None:
+        """Changing github_project between runs should re-write the file."""
+        source = tmp_path / "src"
+        target = tmp_path / "tgt"
+        self._make_template_source(source)
+        target.mkdir()
+
+        mapping = build_file_mapping(source)
+        apply_sync(mapping, target, github_project="navikt/1")
+
+        diff2 = apply_sync(mapping, target, github_project="navikt/2")
+        assert ".github/ISSUE_TEMPLATE/bug.yml" in diff2.changed
+
+        result = (target / ".github" / "ISSUE_TEMPLATE" / "bug.yml").read_text(encoding="utf-8")
+        assert 'projects: ["navikt/2"]' in result
+
+    def test_other_files_not_affected(self, tmp_path: Path) -> None:
+        """Non-template files are unchanged regardless of github_project."""
+        source = tmp_path / "src"
+        target = tmp_path / "tgt"
+        _write(source / "dist" / "agents" / "bot.agent.md", "agent content\n")
+        _write(
+            source / "dist" / "issue-templates" / "bug.yml",
+            'name: Bug\nprojects: ["${GITHUB_PROJECT}"]\n',
+        )
+        target.mkdir()
+
+        mapping = build_file_mapping(source)
+        apply_sync(mapping, target, github_project="navikt/123")
+
+        agent_result = (target / ".github" / "agents" / "bot.agent.md").read_text(encoding="utf-8")
+        assert agent_result == "agent content\n"
+
+
+# ---------------------------------------------------------------------------
+# Manifest rename migration
+# ---------------------------------------------------------------------------
+
+
+class TestMigrateLegacyManifest:
+    def test_moves_legacy_to_new_when_new_absent(self, tmp_path: Path) -> None:
+        from sync import LEGACY_MANIFEST_PATH, MANIFEST_PATH, migrate_legacy_manifest
+
+        legacy = tmp_path / LEGACY_MANIFEST_PATH
+        _write(legacy, '{"files": [".github/agents/bot.md"]}')
+
+        migrate_legacy_manifest(tmp_path)
+
+        assert not legacy.exists()
+        new = tmp_path / MANIFEST_PATH
+        assert new.exists()
+        assert '"files"' in new.read_text(encoding="utf-8")
+
+    def test_noop_when_new_already_exists(self, tmp_path: Path) -> None:
+        from sync import LEGACY_MANIFEST_PATH, MANIFEST_PATH, migrate_legacy_manifest
+
+        legacy = tmp_path / LEGACY_MANIFEST_PATH
+        new = tmp_path / MANIFEST_PATH
+        _write(legacy, '{"files": ["legacy"]}')
+        _write(new, '{"files": ["current"]}')
+
+        migrate_legacy_manifest(tmp_path)
+
+        # New should be untouched, legacy should remain (we do not delete if new exists)
+        assert new.read_text(encoding="utf-8") == '{"files": ["current"]}'
+        assert legacy.exists()
+
+    def test_noop_when_legacy_absent(self, tmp_path: Path) -> None:
+        from sync import MANIFEST_PATH, migrate_legacy_manifest
+
+        migrate_legacy_manifest(tmp_path)
+
+        assert not (tmp_path / MANIFEST_PATH).exists()

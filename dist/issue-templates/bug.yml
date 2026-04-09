@@ -1,7 +1,7 @@
 name: Bug
 description: Rapporter en feil
 type: Bug
-projects: ["navikt/157"]
+projects: ["${GITHUB_PROJECT}"]
 body:
   - type: textarea
     id: description

@@ -1,7 +1,7 @@
 name: Feature
 description: Foreslå ny funksjonalitet eller forbedring
 type: Feature
-projects: ["navikt/157"]
+projects: ["${GITHUB_PROJECT}"]
 body:
   - type: textarea
     id: description

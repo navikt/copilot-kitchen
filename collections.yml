@@ -1,8 +1,8 @@
 # Collections — maps named groups to copilot customization files.
-# Used by the sync workflow when callers specify: collections: "esyfo,backend"
-# 'common' is always included implicitly. Omitting collections syncs all files.
+# Used by the sync workflow when callers specify: collections: "hovmester,backend"
+# 'hovmester' is always included implicitly. Omitting collections syncs all files.
 
-common:
+hovmester:
   agents:
     - hovmester
     - souschef
@@ -18,24 +18,21 @@ common:
     - brainstorm
     - conventional-commit
     - grill-me
-    - nais-manifest
-    - observability-setup
     - issue-management
     - klarsprak
+    - nais-manifest
+    - observability-setup
     - pull-request
     - security-review
     - tdd
   issue_templates:
     - config
-  pull_request_template: PULL_REQUEST_TEMPLATE.md
-
-esyfo:
-  issue_templates:
-    - feature
     - bug
+    - feature
     - story
     - task
     - epic
+  pull_request_template: PULL_REQUEST_TEMPLATE.md
 
 backend:
   instructions:
@@ -52,6 +49,7 @@ backend:
 frontend:
   instructions:
     - accessibility
+    - frontend
   skills:
     - aksel-design
     - auth-overview

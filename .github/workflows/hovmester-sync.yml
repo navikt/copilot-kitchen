@@ -1,6 +1,6 @@
-name: Copilot Config Sync
+name: Hovmester Sync
 
-# Reusable workflow that syncs copilot customization files from copilot-kitchen.
+# Reusable workflow that syncs copilot customization files from hovmester.
 #
 # Creates a PR with changed files. If APP_PRIVATE_KEY is provided, the PR is
 # auto-approved and queued for merge — same pattern as dependabot-automerge.
@@ -17,25 +17,30 @@ on:
   workflow_call:
     inputs:
       collections:
-        description: "Comma-separated collections, e.g. 'esyfo,backend' or 'backend,frontend'."
+        description: "Comma-separated collections, e.g. 'hovmester,backend' or 'hovmester,frontend'."
         type: string
         required: true
       exclude:
         description: "Comma-separated names to exclude, e.g. 'kafka-topic,grill-me'."
         type: string
         required: false
-      automerge_app_id:
-        description: "GitHub App ID for PR creation and auto-merge."
-        type: number
+      github_project:
+        description: "GitHub project for issue template linking (e.g. 'navikt/123'). If empty, the projects line is stripped from templates."
+        type: string
         required: false
-        default: 2906300
+        default: ''
+      automerge_app_id:
+        description: "GitHub App ID for PR creation and auto-merge. Required together with APP_PRIVATE_KEY secret. Leave empty to disable auto-merge."
+        type: string
+        required: false
+        default: ''
     secrets:
       APP_PRIVATE_KEY:
         description: "GitHub App private key for auto-approve and auto-merge."
         required: false
 
 concurrency:
-  group: copilot-config-sync
+  group: hovmester-sync
   cancel-in-progress: true
 
 permissions:
@@ -44,7 +49,7 @@ permissions:
 
 jobs:
   sync:
-    name: Sync copilot customizations
+    name: Sync hovmester customizations
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -53,7 +58,7 @@ jobs:
 
       - name: Shallow clone source repo
         run: |
-          git clone --depth 1 https://github.com/${{ github.repository_owner }}/copilot-kitchen.git /tmp/source
+          git clone --depth 1 https://github.com/${{ github.repository_owner }}/hovmester.git /tmp/source
           echo "SOURCE_SHA=$(git -C /tmp/source rev-parse HEAD)" >> "$GITHUB_ENV"
 
       - name: Install dependencies
@@ -64,6 +69,7 @@ jobs:
         env:
           COLLECTIONS: ${{ inputs.collections }}
           EXCLUDE: ${{ inputs.exclude }}
+          GITHUB_PROJECT: ${{ inputs.github_project }}
         run: |
           ARGS=(--source /tmp/source --target . --output /tmp/sync-result.json --source-sha "$SOURCE_SHA")
 
@@ -73,6 +79,10 @@ jobs:
 
           if [ -n "$EXCLUDE" ]; then
             ARGS+=(--exclude "$EXCLUDE")
+          fi
+
+          if [ -n "$GITHUB_PROJECT" ]; then
+            ARGS+=(--github-project "$GITHUB_PROJECT")
           fi
 
           python3 /tmp/source/scripts/sync.py "${ARGS[@]}"
@@ -86,7 +96,13 @@ jobs:
         id: check-secret
         env:
           HAS_SECRET: ${{ secrets.APP_PRIVATE_KEY }}
-        run: echo "available=$([ -n "$HAS_SECRET" ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
+          APP_ID: ${{ inputs.automerge_app_id }}
+        run: |
+          if [ -n "$HAS_SECRET" ] && [ -n "$APP_ID" ]; then
+            echo "available=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "available=false" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Generate app token
         if: steps.check-secret.outputs.available == 'true'
@@ -104,12 +120,12 @@ jobs:
         uses: peter-evans/create-pull-request@c0f553fe549906ede9cf27b5156039d195d2ece0 # v8.1.0
         with:
           token: ${{ steps.app-token.outputs.token || github.token }}
-          commit-message: "chore: sync copilot customizations from copilot-kitchen"
-          title: "chore: sync copilot customizations"
+          commit-message: "chore: sync hovmester customizations"
+          title: "chore: sync hovmester customizations"
           body: |
-            Syncs copilot customization files from [copilot-kitchen](https://github.com/${{ github.repository_owner }}/copilot-kitchen).
+            Syncs copilot customization files from [hovmester](https://github.com/${{ github.repository_owner }}/hovmester).
 
-            **Source:** `${{ github.repository_owner }}/copilot-kitchen@${{ env.SOURCE_SHA }}`
+            **Source:** `${{ github.repository_owner }}/hovmester@${{ env.SOURCE_SHA }}`
 
             **Changes:**
             ```
@@ -117,8 +133,8 @@ jobs:
             ```
 
             ---
-            🤖 Created automatically by the Copilot Config Sync workflow.
-          branch: copilot-config-sync
+            🤖 Created automatically by the Hovmester Sync workflow.
+          branch: hovmester-sync
           delete-branch: true
           labels: dependencies
 
@@ -129,7 +145,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           PR_NUMBER: ${{ steps.pr.outputs.pull-request-number }}
-        run: gh pr review "$PR_NUMBER" --approve --body "Auto-approved copilot config sync."
+        run: gh pr review "$PR_NUMBER" --approve --body "Auto-approved hovmester sync."
 
       - name: Enable auto-merge
         if: steps.pr.outputs.pull-request-number && steps.check-secret.outputs.available == 'true'

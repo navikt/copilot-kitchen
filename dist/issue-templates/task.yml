@@ -1,7 +1,7 @@
 name: Task
 description: Teknisk oppgave, vedlikehold eller chore
 type: Task
-projects: ["navikt/157"]
+projects: ["${GITHUB_PROJECT}"]
 body:
   - type: textarea
     id: description
