@@ -30,8 +30,8 @@ For hvert nytt element i navikt/copilot, vurder:
 
 | Spørsmål | Ja → | Nei → |
 |----------|------|-------|
-| Er det relevant for Team eSyfos stack? | Gå videre | Hopp over |
-| Er det generelt nok for alle team-repos? | Legg i `common` | Legg i `backend`/`frontend` |
+| Er det relevant for Nav-team generelt? | Gå videre | Hopp over |
+| Er det generelt nok for alle team-repos? | Legg i `hovmester` | Legg i `backend`/`frontend` |
 | Bør det alltid gjelde for en filtype? | Lag instruction med `applyTo` | Lag skill |
 | Har det referansefiler? | Skill med `references/` | Instruction (inline eksempler) |
 
@@ -68,8 +68,8 @@ Fokuser på disse kategoriene i denne rekkefølgen:
 
 ## Kjente forskjeller
 
-copilot-kitchen er tilpasset Team eSyfo og har:
-- Team-spesifikke gjenbrukbare workflows (teamesyfo-github-actions-workflows)
+hovmester er Nav-bredt, men kan avvike fra upstream ved bevisste valg:
+- Multi-agent orkestrering med Nav-spesifikke agenter (ikke i navikt/copilot)
 - Multi-agent orkestreringsmønster (hovmester → kokk/konditor → inspektører)
 - Collections-basert distribusjon (navikt/copilot har flatere struktur)
 - Pull-basert sync via GitHub Actions (navikt/copilot bruker lignende mønster)
