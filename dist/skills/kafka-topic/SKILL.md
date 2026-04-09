@@ -5,7 +5,7 @@ description: Sett opp Kafka-topic, consumer og producer — mønstre, idempotens
 
 # Kafka — Topic, Consumer og Producer
 
-Teamet bruker **plain Apache Kafka clients** — ikke Rapids & Rivers.
+Nav-team bruker typisk **plain Apache Kafka clients** på NAIS Kafka — ikke Rapids & Rivers.
 
 ## Fremgangsmåte
 
