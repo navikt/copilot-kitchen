@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Sync copilot-kitchen source files to target repositories.
+"""Sync hovmester source files to target repositories.
 
 Compares files, copies new/changed ones, removes stale files via manifest,
 and outputs a JSON result for the GitHub Actions workflow.
@@ -348,7 +348,7 @@ def write_manifest(target_root: Path, files: list[str], source_sha: str = "") ->
     manifest_path = target_root / MANIFEST_PATH
     manifest_path.parent.mkdir(parents=True, exist_ok=True)
     data = {
-        "source": "navikt/copilot-kitchen",
+        "source": "navikt/hovmester",
         "source_sha": source_sha,
         "files": sorted(files),
     }
@@ -534,11 +534,11 @@ def apply_sync(
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Sync copilot-kitchen files to a target repository."
+        description="Sync hovmester files to a target repository."
     )
     parser.add_argument(
         "--source", type=Path, required=True,
-        help="Path to the copilot-kitchen source checkout.",
+        help="Path to the hovmester source checkout.",
     )
     parser.add_argument(
         "--target", type=Path, required=True,
