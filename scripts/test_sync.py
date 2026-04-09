@@ -589,3 +589,94 @@ class TestReadSourceContent:
         src.write_bytes(b"# PR\nProjects: ${GITHUB_PROJECT} (should not change)\n")
         result = _read_source_content(src, "dist/PULL_REQUEST_TEMPLATE.md", "navikt/123")
         assert b"${GITHUB_PROJECT}" in result
+
+
+# ---------------------------------------------------------------------------
+# Integration: issue template transform + sync
+# ---------------------------------------------------------------------------
+
+
+class TestSyncWithGithubProject:
+    def _make_template_source(self, root: Path) -> Path:
+        """Create a minimal source with a templated issue template."""
+        _write(
+            root / "dist" / "issue-templates" / "bug.yml",
+            'name: Bug\nprojects: ["${GITHUB_PROJECT}"]\nbody:\n  - question\n',
+        )
+        return root
+
+    def test_substitutes_project_in_written_file(self, tmp_path: Path) -> None:
+        source = tmp_path / "src"
+        target = tmp_path / "tgt"
+        self._make_template_source(source)
+        target.mkdir()
+
+        mapping = build_file_mapping(source)
+        apply_sync(mapping, target, github_project="navikt/123")
+
+        result = (target / ".github" / "ISSUE_TEMPLATE" / "bug.yml").read_text(encoding="utf-8")
+        assert 'projects: ["navikt/123"]' in result
+        assert "${GITHUB_PROJECT}" not in result
+
+    def test_strips_projects_when_empty(self, tmp_path: Path) -> None:
+        source = tmp_path / "src"
+        target = tmp_path / "tgt"
+        self._make_template_source(source)
+        target.mkdir()
+
+        mapping = build_file_mapping(source)
+        apply_sync(mapping, target, github_project="")
+
+        result = (target / ".github" / "ISSUE_TEMPLATE" / "bug.yml").read_text(encoding="utf-8")
+        assert "projects:" not in result
+        assert "name: Bug" in result
+        assert "body:" in result
+
+    def test_idempotent_with_same_project(self, tmp_path: Path) -> None:
+        """Two syncs with the same github_project should report no changes on the second run."""
+        source = tmp_path / "src"
+        target = tmp_path / "tgt"
+        self._make_template_source(source)
+        target.mkdir()
+
+        mapping = build_file_mapping(source)
+        apply_sync(mapping, target, github_project="navikt/42")
+
+        # Second sync — should be fully unchanged
+        diff2 = apply_sync(mapping, target, github_project="navikt/42")
+        assert ".github/ISSUE_TEMPLATE/bug.yml" in diff2.unchanged
+        assert ".github/ISSUE_TEMPLATE/bug.yml" not in diff2.changed
+        assert ".github/ISSUE_TEMPLATE/bug.yml" not in diff2.added
+
+    def test_project_change_detected_as_changed(self, tmp_path: Path) -> None:
+        """Changing github_project between runs should re-write the file."""
+        source = tmp_path / "src"
+        target = tmp_path / "tgt"
+        self._make_template_source(source)
+        target.mkdir()
+
+        mapping = build_file_mapping(source)
+        apply_sync(mapping, target, github_project="navikt/1")
+
+        diff2 = apply_sync(mapping, target, github_project="navikt/2")
+        assert ".github/ISSUE_TEMPLATE/bug.yml" in diff2.changed
+
+        result = (target / ".github" / "ISSUE_TEMPLATE" / "bug.yml").read_text(encoding="utf-8")
+        assert 'projects: ["navikt/2"]' in result
+
+    def test_other_files_not_affected(self, tmp_path: Path) -> None:
+        """Non-template files are unchanged regardless of github_project."""
+        source = tmp_path / "src"
+        target = tmp_path / "tgt"
+        _write(source / "dist" / "agents" / "bot.agent.md", "agent content\n")
+        _write(
+            source / "dist" / "issue-templates" / "bug.yml",
+            'name: Bug\nprojects: ["${GITHUB_PROJECT}"]\n',
+        )
+        target.mkdir()
+
+        mapping = build_file_mapping(source)
+        apply_sync(mapping, target, github_project="navikt/123")
+
+        agent_result = (target / ".github" / "agents" / "bot.agent.md").read_text(encoding="utf-8")
+        assert agent_result == "agent content\n"

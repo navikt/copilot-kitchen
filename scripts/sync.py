@@ -541,6 +541,10 @@ def main() -> None:
         "--exclude", type=str, default=None,
         help="Comma-separated names to exclude (e.g. 'kafka-topic,grill-me').",
     )
+    parser.add_argument(
+        "--github-project", type=str, default="",
+        help="GitHub project reference (e.g. 'navikt/123') for issue template substitution. If empty, the projects line is stripped from templates.",
+    )
     args = parser.parse_args()
 
     source: Path = args.source.resolve()
@@ -563,7 +567,9 @@ def main() -> None:
     # Apply exclude filter if specified
     mapping = filter_mapping_by_exclude(mapping, args.exclude)
 
-    diff = apply_sync(mapping, target, source_sha=args.source_sha)
+    diff = apply_sync(
+        mapping, target, source_sha=args.source_sha, github_project=args.github_project
+    )
 
     result = asdict(diff)
     output.parent.mkdir(parents=True, exist_ok=True)
