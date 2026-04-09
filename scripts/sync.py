@@ -115,6 +115,27 @@ def build_file_mapping(source: Path) -> dict[str, Path]:
     return mapping
 
 
+def _read_source_content(
+    source_path: Path, source_rel: str, github_project: str
+) -> bytes:
+    """Read source file content, applying template transforms where applicable.
+
+    For files under dist/issue-templates/ with a .yml or .yaml extension,
+    applies transform_issue_template() to substitute or strip the
+    ${GITHUB_PROJECT} placeholder. All other files are returned as raw bytes.
+
+    source_rel is the path relative to the source repo root (e.g.
+    'dist/issue-templates/bug.yml'), used to decide whether to apply
+    transforms. It is NOT the target path.
+    """
+    content = source_path.read_bytes()
+    if source_rel.startswith("dist/issue-templates/") and source_path.suffix in (".yml", ".yaml"):
+        text = content.decode("utf-8")
+        transformed = transform_issue_template(text, github_project)
+        return transformed.encode("utf-8")
+    return content
+
+
 def _sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 

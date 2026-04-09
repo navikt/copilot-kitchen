@@ -525,3 +525,61 @@ class TestTransformIssueTemplate:
         content = "name: Bug\ndescription: Plain template without projects line\n"
         result = transform_issue_template(content, "navikt/123")
         assert result == content
+
+
+# ---------------------------------------------------------------------------
+# Source content reading
+# ---------------------------------------------------------------------------
+
+
+class TestReadSourceContent:
+    def test_reads_non_template_unchanged(self, tmp_path: Path) -> None:
+        from sync import _read_source_content
+
+        src = tmp_path / "agent.md"
+        src.write_bytes(b"# hovmester\nsome content\n")
+        result = _read_source_content(src, "dist/agents/hovmester.agent.md", "navikt/123")
+        assert result == b"# hovmester\nsome content\n"
+
+    def test_transforms_issue_template_with_project(self, tmp_path: Path) -> None:
+        from sync import _read_source_content
+
+        src = tmp_path / "bug.yml"
+        src.write_text(
+            'name: Bug\nprojects: ["${GITHUB_PROJECT}"]\n', encoding="utf-8"
+        )
+        result = _read_source_content(src, "dist/issue-templates/bug.yml", "navikt/999")
+        assert b'projects: ["navikt/999"]' in result
+        assert b"${GITHUB_PROJECT}" not in result
+
+    def test_strips_template_projects_when_empty(self, tmp_path: Path) -> None:
+        from sync import _read_source_content
+
+        src = tmp_path / "bug.yml"
+        src.write_text(
+            'name: Bug\nprojects: ["${GITHUB_PROJECT}"]\nbody:\n', encoding="utf-8"
+        )
+        result = _read_source_content(src, "dist/issue-templates/bug.yml", "")
+        assert b"projects:" not in result
+        assert b"name: Bug" in result
+        assert b"body:" in result
+
+    def test_yaml_templates_transformed(self, tmp_path: Path) -> None:
+        """Both .yml and .yaml extensions are supported."""
+        from sync import _read_source_content
+
+        src = tmp_path / "feature.yaml"
+        src.write_text(
+            'name: Feature\nprojects: ["${GITHUB_PROJECT}"]\n', encoding="utf-8"
+        )
+        result = _read_source_content(src, "dist/issue-templates/feature.yaml", "navikt/42")
+        assert b'projects: ["navikt/42"]' in result
+
+    def test_pr_template_not_transformed(self, tmp_path: Path) -> None:
+        """Files outside dist/issue-templates/ are returned as-is even if they contain the placeholder."""
+        from sync import _read_source_content
+
+        src = tmp_path / "PULL_REQUEST_TEMPLATE.md"
+        src.write_bytes(b"# PR\nProjects: ${GITHUB_PROJECT} (should not change)\n")
+        result = _read_source_content(src, "dist/PULL_REQUEST_TEMPLATE.md", "navikt/123")
+        assert b"${GITHUB_PROJECT}" in result
