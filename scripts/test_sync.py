@@ -6,6 +6,7 @@ import json
 from pathlib import Path
 
 from sync import (
+    LEGACY_MANIFEST_PATH,
     LEGACY_MARKER,
     MANIFEST_PATH,
     SyncDiff,
@@ -300,6 +301,27 @@ class TestApplySync:
         diff2 = apply_sync(mapping, target)
         assert diff2.removed == []
         assert len(diff2.unchanged) > 0
+
+    def test_migrates_legacy_manifest_on_first_sync(self, tmp_path: Path) -> None:
+        source = tmp_path / "src"
+        target = tmp_path / "tgt"
+        _make_source(source)
+        target.mkdir()
+
+        # Pre-populate target with a legacy manifest
+        legacy = target / LEGACY_MANIFEST_PATH
+        legacy.parent.mkdir(parents=True, exist_ok=True)
+        legacy.write_text(
+            '{"files": [".github/agents/bot.agent.md"]}', encoding="utf-8"
+        )
+
+        mapping = build_file_mapping(source)
+        apply_sync(mapping, target)
+
+        # Legacy manifest should be gone, new manifest should exist
+        assert not legacy.exists()
+        new = target / MANIFEST_PATH
+        assert new.exists()
 
 
 # ---------------------------------------------------------------------------

@@ -471,6 +471,7 @@ def apply_sync(
     github_project: str = "",
 ) -> SyncDiff:
     """Apply the full sync: copy new/changed, remove stale, write manifest."""
+    migrate_legacy_manifest(target_root)
     diff = compute_diff(mapping, target_root, github_project)
     current_files = set(mapping.keys())
 
