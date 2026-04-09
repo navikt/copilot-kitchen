@@ -128,21 +128,7 @@ Uten begge deler opprettes PRen som vanlig og må merges manuelt.
 
 ## Eksempler
 
-### Backend-repo med auto-merge
-
-```yaml
-jobs:
-  sync:
-    uses: navikt/hovmester/.github/workflows/hovmester-sync.yml@main
-    with:
-      collections: "hovmester,backend"
-      github_project: "navikt/157"         # bytt til ditt teams prosjekt-URL
-      automerge_app_id: "2906300"          # bytt til din GitHub App ID
-    secrets:
-      APP_PRIVATE_KEY: ${{ secrets.AUTOMERGE_APP_PRIVATE_KEY }}
-```
-
-### Fullstack uten auto-merge, utelater Kafka
+### Uten auto-merge
 
 ```yaml
 jobs:
