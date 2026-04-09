@@ -21,11 +21,11 @@ jobs:
   sync:
     uses: navikt/hovmester/.github/workflows/hovmester-sync.yml@main
     with:
-      collections: "hovmester,backend"   # eller "hovmester,frontend", "hovmester,backend,frontend"
-      github_project: "navikt/123"       # valgfritt — auto-linker nye issues til prosjektet
-    # automerge_app_id: "12345678"       # valgfritt — gir auto-merge (krever begge)
-    # secrets:
-    #   APP_PRIVATE_KEY: ${{ secrets.AUTOMERGE_APP_PRIVATE_KEY }}
+      collections: "hovmester,frontend"    # eller "hovmester,backend", "hovmester,backend,frontend"
+      github_project: "navikt/157"         # bytt til ditt teams prosjekt-URL
+      automerge_app_id: "2906300"          # bytt til din GitHub App ID (valgfritt — se Auto-merge)
+    secrets:
+      APP_PRIVATE_KEY: ${{ secrets.AUTOMERGE_APP_PRIVATE_KEY }}  # valgfritt — se Auto-merge
 ```
 
 Kjør workflowen manuelt første gang via `Actions` → `Sync hovmester` → `Run workflow`. Den oppretter en PR med alle filer klare i `.github/`. Merge → du er i gang.
@@ -136,8 +136,8 @@ jobs:
     uses: navikt/hovmester/.github/workflows/hovmester-sync.yml@main
     with:
       collections: "hovmester,backend"
-      github_project: "navikt/123"
-      automerge_app_id: "12345678"
+      github_project: "navikt/157"         # bytt til ditt teams prosjekt-URL
+      automerge_app_id: "2906300"          # bytt til din GitHub App ID
     secrets:
       APP_PRIVATE_KEY: ${{ secrets.AUTOMERGE_APP_PRIVATE_KEY }}
 ```
@@ -151,7 +151,7 @@ jobs:
     with:
       collections: "hovmester,backend,frontend"
       exclude: "kafka-topic"
-      github_project: "navikt/456"
+      github_project: "navikt/157"         # bytt til ditt teams prosjekt-URL
 ```
 
 ### Minimal — bare hovmester, ingen templates, manuell merge
