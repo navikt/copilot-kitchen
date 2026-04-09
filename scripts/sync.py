@@ -21,7 +21,8 @@ import yaml
 # Constants
 # ---------------------------------------------------------------------------
 
-MANIFEST_PATH = ".github/.copilot-kitchen-manifest.json"
+MANIFEST_PATH = ".github/.hovmester-manifest.json"
+LEGACY_MANIFEST_PATH = ".github/.copilot-kitchen-manifest.json"
 LEGACY_MARKER = "Managed by esyfo-cli"
 
 DIR_MAPPING: dict[str, str] = {
@@ -311,6 +312,23 @@ def _file_allowed_by_collections(
 # ---------------------------------------------------------------------------
 # Manifest-based stale cleanup
 # ---------------------------------------------------------------------------
+
+
+def migrate_legacy_manifest(target_root: Path) -> None:
+    """One-time migration from copilot-kitchen manifest to hovmester manifest.
+
+    If the legacy manifest (.copilot-kitchen-manifest.json) exists and the
+    new hovmester manifest does not, move the legacy file to the new path.
+    If the new manifest already exists, leave both files alone (this lets
+    the user clean up the orphaned legacy file manually once they are sure
+    the new manifest is authoritative).
+    """
+    legacy = target_root / LEGACY_MANIFEST_PATH
+    new = target_root / MANIFEST_PATH
+    if legacy.exists() and not new.exists():
+        new.parent.mkdir(parents=True, exist_ok=True)
+        new.write_bytes(legacy.read_bytes())
+        legacy.unlink()
 
 
 def read_manifest(target_root: Path) -> list[str] | None:

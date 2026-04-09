@@ -680,3 +680,44 @@ class TestSyncWithGithubProject:
 
         agent_result = (target / ".github" / "agents" / "bot.agent.md").read_text(encoding="utf-8")
         assert agent_result == "agent content\n"
+
+
+# ---------------------------------------------------------------------------
+# Manifest rename migration
+# ---------------------------------------------------------------------------
+
+
+class TestMigrateLegacyManifest:
+    def test_moves_legacy_to_new_when_new_absent(self, tmp_path: Path) -> None:
+        from sync import LEGACY_MANIFEST_PATH, MANIFEST_PATH, migrate_legacy_manifest
+
+        legacy = tmp_path / LEGACY_MANIFEST_PATH
+        _write(legacy, '{"files": [".github/agents/bot.md"]}')
+
+        migrate_legacy_manifest(tmp_path)
+
+        assert not legacy.exists()
+        new = tmp_path / MANIFEST_PATH
+        assert new.exists()
+        assert '"files"' in new.read_text(encoding="utf-8")
+
+    def test_noop_when_new_already_exists(self, tmp_path: Path) -> None:
+        from sync import LEGACY_MANIFEST_PATH, MANIFEST_PATH, migrate_legacy_manifest
+
+        legacy = tmp_path / LEGACY_MANIFEST_PATH
+        new = tmp_path / MANIFEST_PATH
+        _write(legacy, '{"files": ["legacy"]}')
+        _write(new, '{"files": ["current"]}')
+
+        migrate_legacy_manifest(tmp_path)
+
+        # New should be untouched, legacy should remain (we do not delete if new exists)
+        assert new.read_text(encoding="utf-8") == '{"files": ["current"]}'
+        assert legacy.exists()
+
+    def test_noop_when_legacy_absent(self, tmp_path: Path) -> None:
+        from sync import MANIFEST_PATH, migrate_legacy_manifest
+
+        migrate_legacy_manifest(tmp_path)
+
+        assert not (tmp_path / MANIFEST_PATH).exists()
