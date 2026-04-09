@@ -1,10 +1,37 @@
-# copilot-kitchen 🍽️
+# hovmester 🍽️
 
-Distribuerer Copilot-tilpasninger (agenter, skills, instructions) til repoer via GitHub Actions.
+Multi-agent Copilot-orkestrering for Nav-team. Én workflow-innlegging gir repoet ditt en orkestrator (hovmester), en planlegger (souschef), spesialister (kokk/konditor) og kryssmodell-reviewere (inspektører) — pluss Nav-brede instruksjoner, skills og issue-/PR-templates.
 
-## Agenter
+## Kom i gang
 
-Bruk **@hovmester** for alle oppgaver — den koordinerer planlegging, implementasjon og kodegjennomgang automatisk.
+Legg til denne workflowen i repoet ditt som `.github/workflows/hovmester-sync.yml`:
+
+```yaml
+name: Sync hovmester
+on:
+  schedule:
+    - cron: '0 5 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  sync:
+    uses: navikt/hovmester/.github/workflows/hovmester-sync.yml@main
+    with:
+      collections: "hovmester,backend"   # eller "hovmester,frontend", "hovmester,backend,frontend"
+      github_project: "navikt/123"       # valgfritt — auto-linker nye issues til prosjektet
+    # secrets:                           # valgfritt — gir auto-merge
+    #   APP_PRIVATE_KEY: ${{ secrets.AUTOMERGE_APP_PRIVATE_KEY }}
+```
+
+Kjør workflowen manuelt første gang via `Actions` → `Sync hovmester` → `Run workflow`. Den oppretter en PR med alle filer klare i `.github/`. Merge → du er i gang.
+
+## Hva du får
+
+Bruk **@hovmester** som inngang til alt — den koordinerer planlegging, implementasjon og kodegjennomgang automatisk.
 
 ```
                         ┌─────────────┐
@@ -57,101 +84,94 @@ Bruk **@hovmester** for alle oppgaver — den koordinerer planlegging, implement
 
 > Oppgaver delegeres som vertikale funksjonssnitt — én agent eier hele funksjonen. Kryssmodell-review fanger blindsoner: Opus gjennomgår GPT-kode, GPT gjennomgår Opus-kode.
 
-## Kom i gang
-
-Legg til workflowen i repoet ditt:
-
-```yaml
-# .github/workflows/copilot-sync.yml
-name: Copilot Config Sync
-on:
-  schedule:
-    - cron: '0 5 * * *'
-  workflow_dispatch:
-jobs:
-  sync:
-    uses: navikt/copilot-kitchen/.github/workflows/copilot-sync.yml@main
-    with:
-      collections: "esyfo,backend"   # Eller "esyfo,frontend", "backend", etc.
-    secrets:
-      APP_PRIVATE_KEY: ${{ secrets.AUTOMERGE_APP_PRIVATE_KEY }}  # Valgfritt — gir auto-merge
-    permissions:
-      contents: write
-      pull-requests: write
-```
-
-Kjør manuelt: `Actions` > `Copilot Config Sync` > `Run workflow`.
-
-**Med `APP_PRIVATE_KEY`:** PR opprettes, godkjennes og merges automatisk.
-**Uten:** PR opprettes, men krever manuell review og merge.
-
 ## Collections
 
 | Collection | Innhold |
 |---|---|
-| `common` (alltid inkludert) | 6 agenter, 3 instructions, 10 skills, PR-mal, issue-config |
-| `esyfo` | Issue-maler (feature, bug, story, task, epic) |
-| `backend` | Kotlin instruction + 7 backend-skills |
-| `frontend` | Accessibility instruction + 3 frontend-skills |
+| `hovmester` (alltid inkludert) | 6 agenter, 3 Nav-brede instructions, 10 generiske skills, issue templates, PR-mal |
+| `backend` | Kotlin instruction + 7 backend-skills (Ktor, Spring, Flyway, Kafka, Postgres, API-design, auth) |
+| `frontend` | Frontend og accessibility instructions + 3 frontend-skills (Aksel, auth, Lumi) |
 
-Eksempler:
-- `"esyfo,backend"` — Team eSyfo backend-repo
-- `"esyfo,frontend"` — Team eSyfo frontend-repo
-- `"backend"` — annet team, backend-repo
-- `"backend,frontend"` — annet team, fullstack-repo
+**Eksempler:**
+- `"hovmester,backend"` — backend-repo
+- `"hovmester,frontend"` — frontend-repo
+- `"hovmester,backend,frontend"` — fullstack-repo
+- `"hovmester"` — bare orkestratoren og generiske ting (ingen rammeverk-spesifikke skills)
 
-## Hva som synkes
+## Konfigurasjon
 
-```
-dist/
-├── agents/          → .github/agents/          6 agenter (multi-agent pipeline)
-├── instructions/    → .github/instructions/    Auto-lastes basert på filtype
-├── skills/          → .github/skills/          On-demand, lastes ved behov
-├── issue-templates/ → .github/ISSUE_TEMPLATE/  Issue-maler
-└── PULL_REQUEST_TEMPLATE.md → .github/         PR-mal
-```
-
-### Instructions — alltid-på regler
-
-| Instruction | Lastes for | Innhold |
+| Input | Beskrivelse | Påkrevd |
 |---|---|---|
-| `security` | Alle filer | NAIS accessPolicy, hemmeligheter, PII |
-| `docker` | Dockerfiler | Chainguard images, multi-stage builds |
-| `github-actions` | Workflow-filer | SHA-pinning, permissions, Nais deploy |
-| `kotlin` | Kotlin-filer | Gradle, Flyway, logging, metrikker |
-| `accessibility` | React-komponenter | WCAG 2.1 AA, Aksel UU-mønstre |
+| `collections` | Kommaseparerte collections (f.eks. `"hovmester,backend"`) | Ja |
+| `exclude` | Kommaseparert liste over items som skal utelates (f.eks. `"kafka-topic,epic"`) | Nei |
+| `github_project` | GitHub-prosjekt for auto-linking av nye issues (f.eks. `"navikt/123"`). Hvis tom, fjernes `projects`-feltet fra issue-templatene. | Nei |
+| `automerge_app_id` | GitHub App ID for auto-merge. Må være satt sammen med `APP_PRIVATE_KEY` secret. | Nei |
 
-### Skills — on-demand veiledning
+| Secret | Beskrivelse |
+|---|---|
+| `APP_PRIVATE_KEY` | Privatnøkkel for GitHub App som gir auto-merge. |
 
-Lastes kun når oppgaven krever det. Sparer plass i kontekstvinduet.
+### Issue templates
 
-**Common:** brainstorm, conventional-commit, grill-me, issue-management, klarsprak, nais-manifest, observability-setup, pull-request, security-review, tdd
+Default-settet er `bug`, `feature`, `story`, `task` og `epic` (pluss `config`). Hvis du vil utelate noen, bruk `exclude: "epic,task"`.
 
-**Backend:** api-design, auth-overview, flyway-migration, kafka-topic, kotlin-ktor, kotlin-spring, postgresql-review
+Hvis `github_project` er satt, auto-linkes nye issues til det prosjektet. Hvis ikke, opprettes de uten prosjekttilknytning.
 
-**Frontend:** aksel-design, auth-overview, lumi-survey
+### Auto-merge
 
-## Auto-merge
+Auto-merge krever to ting:
+1. En GitHub App installert på repoet ditt (med `contents: write` og `pull-requests: write`)
+2. Både `automerge_app_id`-input OG `APP_PRIVATE_KEY`-secret
 
-Krever `AUTOMERGE_APP_PRIVATE_KEY` som **Actions secret** (ikke Dependabot secret):
+Uten begge deler opprettes PRen som vanlig og må merges manuelt.
 
-1. **App-token** oppretter PR (trigger build via push)
-2. **GITHUB_TOKEN** godkjenner PR (annen aktør enn appen)
-3. **App-token** aktiverer auto-merge (trigger merge queue)
+## Eksempler
 
-## Migrering fra esyfo-cli
+### Backend-repo med auto-merge
 
-1. Legg til workflowen og kjør manuelt
-2. Første sync rydder opp `Managed by esyfo-cli`-filer automatisk
-3. Slett `.github/workflows/copilot-config-auto-approve.yml`
-4. Legg til `AUTOMERGE_APP_PRIVATE_KEY` som Actions secret
+```yaml
+jobs:
+  sync:
+    uses: navikt/hovmester/.github/workflows/hovmester-sync.yml@main
+    with:
+      collections: "hovmester,backend"
+      github_project: "navikt/123"
+      automerge_app_id: "12345678"
+    secrets:
+      APP_PRIVATE_KEY: ${{ secrets.AUTOMERGE_APP_PRIVATE_KEY }}
+```
+
+### Fullstack uten auto-merge, utelater Kafka
+
+```yaml
+jobs:
+  sync:
+    uses: navikt/hovmester/.github/workflows/hovmester-sync.yml@main
+    with:
+      collections: "hovmester,backend,frontend"
+      exclude: "kafka-topic"
+      github_project: "navikt/456"
+```
+
+### Minimal — bare hovmester, ingen templates, manuell merge
+
+```yaml
+jobs:
+  sync:
+    uses: navikt/hovmester/.github/workflows/hovmester-sync.yml@main
+    with:
+      collections: "hovmester"
+      exclude: "bug,feature,story,task,epic"
+```
 
 ## Slik fungerer det
 
-1. Kloner dette repoet (shallow)
-2. Velger filer basert på collections
-3. Sammenligner SHA-256-hasher, kopierer endrede filer, fjerner utdaterte via manifest
-4. Oppretter eller oppdaterer PR på `copilot-config-sync`-branch
-5. Godkjenner og merger automatisk (hvis secret er konfigurert)
+Workflowen kjøres på cron (eller manuell trigger), sammenligner ditt repos `.github/`-katalog med den valgte collectionen i hovmester, og oppretter en PR hvis noe har endret seg. Manifest-fila `.github/.hovmester-manifest.json` sporer hvilke filer som er "eid" av hovmester så stale filer fjernes automatisk.
 
-Synkede filer forvaltes av copilot-kitchen — ikke rediger dem manuelt. Lag egne filer for repo-spesifikke tilpasninger.
+Workflowen endrer aldri filer utenfor `.github/`, og `.github/workflows/` er alltid ekskludert — workflows eier du selv.
+
+Synkede filer forvaltes av hovmester — ikke rediger dem manuelt. Lag egne filer for repo-spesifikke tilpasninger.
+
+## Bidra
+
+Se `.github/copilot-instructions.md` for arkitektur, filstruktur, og retningslinjer for å legge til nye agenter, instructions og skills.
