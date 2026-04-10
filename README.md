@@ -213,7 +213,7 @@ permissions:
   pull-requests: write
 
 jobs:
-  verify-and-merge:
+  verify-hovmester-sync:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -295,7 +295,7 @@ jobs:
 
 **Steg 4 — Sett branch protection**
 
-Sett `verify-and-merge` som required status check på default branch. Hvis dere krever approvals for å merge, må bot-approval telle for disse PRene.
+Sett `verify-hovmester-sync` som required status check på default branch. Hvis dere krever approvals for å merge, må bot-approval telle for disse PRene.
 
 Første gang: merge `hovmester-verify.yml` til default branch før du aktiverer branch protection, ellers får du en chicken-and-egg-situasjon.
 
