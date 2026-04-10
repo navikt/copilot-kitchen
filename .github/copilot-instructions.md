@@ -5,7 +5,7 @@ Distribusjonsrepo for GitHub Copilot-tilpasninger (agenter, instructions, skills
 ## Arkitektur
 
 ### Pull-basert sync
-Consumer-repos kaller en reusable workflow (`hovmester-sync.yml`) som shallow-kloner dette repoet, kjører `scripts/sync.py`, og oppretter PR med endringer. Konfigurasjon via workflow-inputs (`collections`, `exclude`, `github_project`, `automerge_app_id`).
+Consumer-repos kaller en reusable workflow (`hovmester-sync.yml`) som shallow-kloner dette repoet, kjører `scripts/sync.py`, og oppretter PR med endringer. Konfigurasjon via workflow-inputs (`collections`, `exclude`, `github_project`) og valgfri App-auth for PR-opprettelse (`pr_app_id` + `APP_PRIVATE_KEY`). Auto-merge er consumer-eid via en egen verify-workflow.
 
 ### Filstruktur
 

@@ -2,16 +2,15 @@ name: Hovmester Sync
 
 # Reusable workflow that syncs copilot customization files from hovmester.
 #
-# Creates a PR with changed files. If APP_PRIVATE_KEY is provided, the PR is
-# auto-approved and queued for merge — same pattern as dependabot-automerge.
+# Creates a PR with changed files.
 #
-# Token roles (when APP_PRIVATE_KEY is provided):
-#   App token  → creates PR (triggers build via push event)
-#   GITHUB_TOKEN → approves PR (different actor than app)
-#   App token  → enables auto-merge (triggers merge_group events)
+# If pr_app_id and APP_PRIVATE_KEY are provided, the PR is created by a
+# GitHub App. This is recommended when the consumer uses auto-merge or has
+# required CI checks that must trigger on sync PRs.
 #
-# Without APP_PRIVATE_KEY, the PR is created with GITHUB_TOKEN and requires
-# manual review. Build may not trigger automatically in this case.
+# Without app credentials, the PR is created with GITHUB_TOKEN and can be
+# merged manually. Auto-merge is handled by the consumer's own verify
+# workflow (hovmester-verify.yml) — not by this workflow. See README.
 
 on:
   workflow_call:
@@ -29,14 +28,14 @@ on:
         type: string
         required: false
         default: ''
-      automerge_app_id:
-        description: "GitHub App ID for PR creation and auto-merge. Required together with APP_PRIVATE_KEY secret. Leave empty to disable auto-merge."
+      pr_app_id:
+        description: "GitHub App ID for PR creation. Recommended when using auto-merge or required CI."
         type: string
         required: false
         default: ''
     secrets:
       APP_PRIVATE_KEY:
-        description: "GitHub App private key for auto-approve and auto-merge."
+        description: "GitHub App private key for PR creation. Required together with pr_app_id."
         required: false
 
 concurrency:
@@ -91,30 +90,29 @@ jobs:
 
           python3 /tmp/source/scripts/summary.py /tmp/sync-result.json >> "$GITHUB_OUTPUT"
 
-      # --- Auto-merge setup (optional) ---
-
-      - name: Check if auto-merge is configured
+      - name: Check if App auth is configured
         if: steps.sync.outputs.has_changes == 'true'
-        id: check-secret
+        id: check-app-auth
         env:
-          HAS_SECRET: ${{ secrets.APP_PRIVATE_KEY }}
-          APP_ID: ${{ inputs.automerge_app_id }}
+          APP_ID: ${{ inputs.pr_app_id }}
+          APP_PRIVATE_KEY: ${{ secrets.APP_PRIVATE_KEY }}
         run: |
-          if [ -n "$HAS_SECRET" ] && [ -n "$APP_ID" ]; then
+          if [ -n "$APP_ID" ] && [ -n "$APP_PRIVATE_KEY" ]; then
             echo "available=true" >> "$GITHUB_OUTPUT"
-          else
+          elif [ -z "$APP_ID" ] && [ -z "$APP_PRIVATE_KEY" ]; then
             echo "available=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "::error::pr_app_id and APP_PRIVATE_KEY must be set together"
+            exit 1
           fi
 
       - name: Generate app token
-        if: steps.check-secret.outputs.available == 'true'
+        if: steps.check-app-auth.outputs.available == 'true'
         id: app-token
         uses: actions/create-github-app-token@f8d387b68d61c58ab83c6c016672934102569859 # v3.0.0
         with:
-          app-id: ${{ inputs.automerge_app_id }}
+          app-id: ${{ inputs.pr_app_id }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
-
-      # --- Create PR ---
 
       - name: Create pull request
         if: steps.sync.outputs.has_changes == 'true'
@@ -139,19 +137,3 @@ jobs:
           branch: hovmester-sync
           delete-branch: true
           labels: dependencies
-
-      # --- Auto-approve and merge ---
-
-      - name: Approve pull request
-        if: steps.pr.outputs.pull-request-number && steps.check-secret.outputs.available == 'true'
-        env:
-          GH_TOKEN: ${{ github.token }}
-          PR_NUMBER: ${{ steps.pr.outputs.pull-request-number }}
-        run: gh pr review "$PR_NUMBER" --approve --body "Auto-approved hovmester sync."
-
-      - name: Enable auto-merge
-        if: steps.pr.outputs.pull-request-number && steps.check-secret.outputs.available == 'true'
-        env:
-          GH_TOKEN: ${{ steps.app-token.outputs.token }}
-          PR_NUMBER: ${{ steps.pr.outputs.pull-request-number }}
-        run: gh pr merge "$PR_NUMBER" --auto --squash
