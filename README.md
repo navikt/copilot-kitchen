@@ -201,7 +201,6 @@ Legg til `.github/workflows/hovmester-verify.yml` i consumer-repoet:
 <summary>Vis workflow</summary>
 
 ```yaml
-# Managed by team — do not sync from hovmester.
 name: Verify and merge hovmester sync
 
 on:
