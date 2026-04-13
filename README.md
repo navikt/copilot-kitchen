@@ -206,10 +206,11 @@ name: Verify and merge hovmester sync
 on:
   pull_request_target:
     types: [opened, synchronize, reopened]
+  merge_group:
 
 jobs:
   verify-hovmester-sync:
-    if: github.head_ref == 'hovmester-sync' && github.event.pull_request.head.repo.full_name == github.repository
+    if: github.event_name == 'merge_group' || (github.head_ref == 'hovmester-sync' && github.event.pull_request.head.repo.full_name == github.repository)
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:
@@ -227,6 +228,11 @@ jobs:
           REPO: ${{ github.repository }}
         run: |
           set -euo pipefail
+
+          if [[ "$GITHUB_EVENT_NAME" == "merge_group" ]]; then
+            echo "✅ Merge queue — verification already completed on pull_request_target"
+            exit 0
+          fi
 
           if [[ "$HEAD_REF" != "hovmester-sync" ]] || [[ "$HEAD_REPO" != "$REPO" ]]; then
             echo "Not a hovmester sync PR — skipping"
@@ -290,6 +296,8 @@ jobs:
 </details>
 
 > `pull_request_target` er trygt her fordi workflowen aldri sjekker ut PR-branchen. Den leser bare filstier via GitHub API og bruker repoets egne workflow-fil fra default branch.
+>
+> `merge_group`-triggeren er en no-op som lar merge queue passere — verifiseringen skjer allerede på `pull_request_target`. Uten denne vil `verify-hovmester-sync` blokkere merge queue med "Expected — Waiting for status".
 >
 > **Hardkoding:** Hvis du hardkoder bot-login, erstatt `${{ vars.HOVMESTER_APP_BOT_LOGIN }}` med en string (f.eks. `"my-sync-app[bot]"`) i både `EXPECTED_PR_AUTHOR` og `if`-betingelsen i approve-steget.
 
