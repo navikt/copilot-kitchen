@@ -15,6 +15,20 @@ Bruk denne skillen når du jobber i Nav-frontend med `@navikt/ds-react`, layout 
 - Dokumentasjon: `aksel.nav.no`
 - Verifiser alltid komponent-API og props før implementasjon
 
+## Installasjon og oppsett
+
+```bash
+pnpm add @navikt/ds-react @navikt/ds-css @navikt/aksel-icons
+```
+
+Importer CSS i roten av appen (f.eks. `_app.tsx`, `layout.tsx` eller `main.tsx`):
+
+```css
+@import "@navikt/ds-css";
+```
+
+For detaljert oppsett, token-importstier og v8-codemods, se `references/setup.md`.
+
 ## Spacing-regler (KRITISK)
 
 **Foretrekk Aksel spacing-tokens. Unngå Tailwind padding/margin når Aksel-tokens er tilgjengelige.**
@@ -157,6 +171,8 @@ export function Example(): JSX.Element {
 - Bygg standardfelter, knapper eller varsler med rå HTML hvis Aksel tilbyr komponenten
 - Bruk responsive hacks når responsive props dekker behovet
 
+For installasjon, CSS-oppsett og v8-codemods, se `references/setup.md`.
 For komplett token-oversikt, se `references/tokens.md`.
+For semantiske `--ax-*`-tokens og `data-color`, se `references/semantic-tokens.md`.
 For komponent-API, se `references/components.md`.
-For layout-mønstre, se `references/patterns.md`.
+For layout-mønstre (inkl. Next.js), se `references/patterns.md`.

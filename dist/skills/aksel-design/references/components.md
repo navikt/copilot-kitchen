@@ -417,6 +417,67 @@ export function CopyBlock(): JSX.Element {
 }
 ```
 
+## Loader og Skeleton
+
+Bruk `Loader` for aktive ventesituasjoner og `Skeleton` for innhold som laster med kjent form.
+
+**Nyttige props**
+- `Loader`: `size` (`xsmall`, `small`, `medium`, `large`, `xlarge`, `2xlarge`, `3xlarge`), `title`, `variant`
+- `Skeleton`: `variant` (`rectangle`, `circle`, `text`), `width`, `height`
+
+```tsx
+import { BodyShort, Loader, Skeleton, VStack } from "@navikt/ds-react";
+
+export function CardLoading(): JSX.Element {
+  return (
+    <VStack gap="space-8">
+      <Skeleton variant="rectangle" width="100%" height="40px" />
+      <Skeleton variant="text" width="80%" />
+      <Skeleton variant="text" width="60%" />
+    </VStack>
+  );
+}
+
+export function PageLoader(): JSX.Element {
+  return (
+    <VStack justify="center" align="center" marginBlock="space-40">
+      <Loader size="3xlarge" title="Laster" />
+      <BodyShort aria-live="polite">Loading data…</BodyShort>
+    </VStack>
+  );
+}
+```
+
+## ExpansionCard
+
+Bruk `ExpansionCard` når innhold kan foldes ut for å redusere kognitiv belastning på siden. Støtter `data-color` for semantisk farging.
+
+**Nyttige byggesteiner**
+- `ExpansionCard`
+- `ExpansionCard.Header`, `ExpansionCard.Title`, `ExpansionCard.Description`
+- `ExpansionCard.Content`
+
+```tsx
+import { BodyLong, ExpansionCard, HStack } from "@navikt/ds-react";
+
+export function PaymentDetails(): JSX.Element {
+  return (
+    <ExpansionCard aria-label="Utbetalingsdetaljer" data-color="accent" size="small">
+      <ExpansionCard.Header>
+        <ExpansionCard.Title as="h4">
+          <HStack align="center" wrap={false} justify="space-between">
+            Utbetaling mars 2026
+          </HStack>
+        </ExpansionCard.Title>
+      </ExpansionCard.Header>
+      <ExpansionCard.Content>
+        <BodyLong>Detaljer om beløp og trekk.</BodyLong>
+      </ExpansionCard.Content>
+    </ExpansionCard>
+  );
+}
+```
+
 ## ErrorSummary
 
 Bruk `ErrorSummary` øverst i skjema når du må samle flere valideringsfeil.
