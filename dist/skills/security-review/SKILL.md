@@ -32,7 +32,7 @@ log.info("Behandler sak", kv("sakId", sak.id), kv("tema", sak.tema))
 log.info("Behandler sak for ${bruker.fnr}")
 ```
 
-Visning av personopplysninger til Nav-ansatte skal logges i **CEF-format** til auditlog (ikke standardlogg). Se `references/gdpr-privacy.md` for format og `references/nav-threat-model.md` for hva som skal logges når.
+Visning av personopplysninger til Nav-ansatte skal logges i **CEF-format** til auditlog (ikke standardlogg). Se `references/nav-threat-model.md` for format og hva som skal logges når.
 
 ## accessPolicy som first-line defense
 
@@ -140,5 +140,5 @@ Secrets opprettes i Nais Console og injiseres via `envFrom`/`filesFrom`. Kopier 
 | [sikkerhet.nav.no](https://sikkerhet.nav.no) | Navs Golden Path for sikkerhet |
 | auth-overview skill | JWT-validering, TokenX, ID-porten, Maskinporten |
 | `references/nav-threat-model.md` | Dyp trusselmodellering (STRIDE i Nav-kontekst), DPIA-prosess, audit-logging-krav, Datatilsynet-varsling |
-| `references/gdpr-privacy.md` | PII-kategorisering, retention, anonymisering, CEF-format |
-| `references/api-security.md` | API-mønstre: headers, CORS, cookies, rate limiting, hendelseshåndtering |
+| `references/gdpr-privacy.md` | Nav-spesifikk PII-kategorisering og pekere til DPIA/CEF/retention |
+| `references/api-security.md` | Nav-signal: Nav-Call-Id, Nav-Consumer-Id, accessPolicy som primærmekanisme |
