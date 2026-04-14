@@ -127,7 +127,7 @@ class VedtakRiverTest {
               "@event_name": "vedtak_fattet",
               "@id": "550e8400-e29b-41d4-a716-446655440000",
               "vedtakId": "v1",
-              "fnr": "12345678901",
+              "fnr": "00000000000",
               "fom": "2026-01-01",
               "tom": "2026-03-31"
             }
