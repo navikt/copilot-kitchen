@@ -180,7 +180,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:
-      contents: write
+      contents: read
       pull-requests: write
     steps:
       - name: Verify file scope
