@@ -106,5 +106,3 @@ Eksempler på typisk redigering fra AI-tung eller stiv tekst til klarspråk.
 
 ✅ (Kutt hele avsnittet. Leseren har allerede lest det du oppsummerer.)
 ```
-</content>
-</invoke>
