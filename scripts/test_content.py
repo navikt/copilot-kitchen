@@ -6,11 +6,17 @@ import re
 import pytest
 import yaml
 
-DIST = os.path.join(os.path.dirname(__file__), "..", "dist")
+REPO_ROOT = os.path.join(os.path.dirname(__file__), "..")
+DIST = os.path.join(REPO_ROOT, "dist")
+GITHUB = os.path.join(REPO_ROOT, ".github")
 
 # Pre-existing violations som ikke skal blokkere nav-pilot-adopsjon.
 # Disse skal splittes opp i egen oppfølging.
 LINE_CAP_ALLOWLIST = {"lumi-survey"}  # pre-existing; split in follow-up
+
+# Skills som lever KUN i .github/ (hovmester-repoets egen Copilot-config)
+# og ikke i dist/. Disse parity-testen ignorerer.
+GITHUB_ONLY_SKILLS = {"copilot-upstream-sync"}
 
 
 def _iter_md_files(root):
@@ -172,3 +178,46 @@ def test_skill_line_cap():
     if warnings:
         print("\nSKILL.md line-count soft-warnings:\n  " + "\n  ".join(warnings))
     assert not violations, "SKILL.md over 200-line cap:\n  " + "\n  ".join(violations)
+
+
+def _collect_parity_pairs():
+    """Yield (dist_abspath, github_abspath, relpath) for hver fil-type som skal speiles."""
+    for subtree in ("skills", "agents", "instructions"):
+        dist_root = os.path.join(DIST, subtree)
+        gh_root = os.path.join(GITHUB, subtree)
+        if not os.path.isdir(dist_root):
+            continue
+        for abspath, relpath in _iter_md_files(dist_root):
+            # For skills/, hopp over eventuelle GITHUB_ONLY_SKILLS (skulle ikke
+            # treffe på dist-siden, men vi sjekker for framtidig allowlisting).
+            parts = relpath.split(os.sep)
+            if subtree == "skills" and parts and parts[0] in GITHUB_ONLY_SKILLS:
+                continue
+            yield abspath, os.path.join(gh_root, relpath), f"{subtree}/{relpath}"
+
+
+def test_github_mirror_parity_with_dist():
+    """Hver fil under dist/{skills,agents,instructions}/ skal ha identisk motpart
+    under .github/. Kjør `python3 scripts/sync.py --source . --target .` hvis testen
+    feiler. GITHUB_ONLY_SKILLS-allowlisten er for repo-lokale meta-skills som kun
+    finnes i .github/."""
+    missing = []
+    mismatched = []
+    for dist_path, gh_path, relpath in _collect_parity_pairs():
+        if not os.path.isfile(gh_path):
+            missing.append(relpath)
+            continue
+        with open(dist_path) as a, open(gh_path) as b:
+            if a.read() != b.read():
+                mismatched.append(relpath)
+    problems = []
+    if missing:
+        problems.append("mangler i .github/:\n  " + "\n  ".join(missing))
+    if mismatched:
+        problems.append("innhold divergerer fra dist/:\n  " + "\n  ".join(mismatched))
+    assert not problems, (
+        ".github/-mirror er ikke i sync med dist/. "
+        "Kjør: python3 scripts/sync.py --source . --target . "
+        "--output /tmp/sync.json --source-sha $(git rev-parse HEAD) "
+        "--collections hovmester,backend,frontend\n\n" + "\n\n".join(problems)
+    )

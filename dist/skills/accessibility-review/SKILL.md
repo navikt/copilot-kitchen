@@ -55,6 +55,6 @@ Nav skriver for folk i sårbare situasjoner. Uklart språk er et UU-brudd i prak
 ## Kilder
 
 - [uutilsynet.no](https://www.uutilsynet.no) — tilsyn, regelverk, tilgjengelighetserklæring
-- [WCAG 2.2](https://www.w3.org/TR/WCAG22/) — minstekrav AA
+- [WCAG 2.2](https://www.w3.org/TR/WCAG22/) — W3C-standard; vurder 2.2-suksesskriterier der relevant (forskriftskravet er per i dag 2.1 A/AA — verifiser mot uutilsynet.no)
 - [Aksel tilgjengelighet](https://aksel.nav.no/grunnleggende/prinsipper/universell-utforming) — Navs praksis og komponentstøtte
 - [WCAG-EM](https://www.w3.org/TR/WCAG-EM/) — metodikk for eksterne revisjoner
