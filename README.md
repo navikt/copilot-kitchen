@@ -1,6 +1,6 @@
 # hovmester 🍽️
 
-Multi-agent Copilot-orkestrering for Nav-team. Én workflow-innlegging gir repoet ditt en orkestrator (hovmester), en planlegger (souschef), spesialister (kokk/konditor) og kryssmodell-reviewere (inspektører) — pluss Nav-brede instruksjoner, skills og issue-/PR-templates.
+Multi-agent Copilot-orkestrering for Nav-team. Én workflow gir repoet ditt en orkestrator (hovmester), en planlegger (souschef), spesialister (kokk/konditor) og kryssmodell-reviewere (inspektører) — pluss instruksjoner, skills og issue-/PR-templates.
 
 ## Kom i gang
 
