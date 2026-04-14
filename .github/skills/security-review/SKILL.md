@@ -1,207 +1,137 @@
 ---
 name: security-review
-description: Sikkerhetsgjennomgang før commit/push/PR — OWASP Top 10, Dependabot, Trivy, hemmeligheter, inputvalidering og referanser for GDPR/API-sikkerhet
+description: Sikkerhetsgjennomgang for Nav-apper — PII-klassifisering, accessPolicy-vurdering og eskalering til sikkerhetschampion. Progressive disclosure for dyp trusselmodellering.
 ---
-# Sikkerhetsgjennomgang
 
-Sikkerhetssjekk før commit, push og PR for Nav-applikasjoner. Dekker hemmeligheter, sårbarhetsskanning, OWASP Top 10, GDPR/personvern og API-sikkerhet. Hold hovedreglene korte; bruk `references/` for detaljer.
+# Sikkerhetsgjennomgang — Nav
 
-## Automatiserte skanninger
+Nav-spesifikk sikkerhetssjekk før commit, push og PR. Generiske OWASP-mønstre (SQLi, XSS, CSRF, injection) forutsettes kjent — dette dokumentet fokuserer på Nav-konteksten: PII-klassifisering, accessPolicy som sikkerhetsmekanisme, og eskalering til sikkerhetschampion.
 
-Kjør disse i terminalen:
+## PII-klassifisering i Nav
 
-```bash
-# Skann repoet for kjente sårbarheter og hemmeligheter
-trivy repo .
+Nav behandler personopplysninger med fire beskyttelsesnivåer. Feil klassifisering er den vanligste rotårsaken til alvorlige avvik.
 
-# Skann Docker image for HIGH/CRITICAL CVE-er
-trivy image <image-name> --severity HIGH,CRITICAL
+| Nivå | Typiske data | Behandling |
+|------|--------------|------------|
+| **Strengt fortrolig** | Helseopplysninger, diagnoser, sykemeldinger, voldsutsatte/kode 6, barnevernsdata | Kryptering i ro og transit, streng tilgangsstyring, CEF-auditlogg ved visning (WARN), dedikert DPIA |
+| **Fortrolig** | Fødselsnummer (fnr), D-nummer, kode 7, sensitive ytelsesdata | Aldri i standardlogger, CEF-auditlogg ved visning, tilgangsstyring per sak/bruker |
+| **Intern** | Navn, adresse, telefon, e-post, ikke-sensitiv ytelsesstatus | Dataminimering, tilgang per tjenstlig behov, retention dokumentert |
+| **Åpen** | Offentlig statistikk, anonymiserte aggregater | Normal tilgang; verifiser at anonymiseringen tåler koblingsangrep |
 
-# Skann GitHub Actions workflows for usikre mønstre
-zizmor .github/workflows/
+**Klassifisering av ytelsesdata**: Faktumet "en bruker mottar ytelse X" kan være fortrolig eller strengt fortrolig avhengig av ytelsen (f.eks. AAP/uføretrygd implisitt helseinformasjon). Spør sikkerhetschampion ved tvil.
 
-# Raskt søk etter hemmeligheter i git-historikken
-git log -p --all -S 'password' -- '*.kt' '*.ts' | head -100
-git log -p --all -S 'secret' -- '*.kt' '*.ts' | head -100
-```
+**Placeholder i kode og dokumentasjon**: Bruk aldri ekte fnr. I eksempler og tester: `00000000000` eller Skatteetatens offisielle testserie (markert eksplisitt som syntetisk). Se `references/nav-threat-model.md` for DPIA-prosess og audit-krav.
 
-## Parameteriserte SQL-spørringer
+### PII i logger
 
 ```kotlin
-// ✅ Parameterisert spørring
-fun findBruker(fnr: String): Bruker? =
-    jdbcTemplate.queryForObject(
-        "SELECT * FROM bruker WHERE fnr = ?",
-        brukerRowMapper,
-        fnr
-    )
+// OK — korrelasjons-ID og tema, ingen PII
+log.info("Behandler sak", kv("sakId", sak.id), kv("tema", sak.tema))
 
-// ❌ SQL injection
-fun findBrukerUnsafe(fnr: String): Bruker? =
-    jdbcTemplate.queryForObject(
-        "SELECT * FROM bruker WHERE fnr = '$fnr'",
-        brukerRowMapper
-    )
+// Aldri — FNR, navn, diagnose eller ytelsesdata i standardlogg
+log.info("Behandler sak for ${bruker.fnr}")
 ```
 
-## Ingen PII i logger
+Visning av personopplysninger til Nav-ansatte skal logges i **CEF-format** til auditlog (ikke standardlogg). Se `references/nav-threat-model.md` for format og hva som skal logges når.
 
-```kotlin
-// ✅ Logg korrelasjons-ID, ikke PII
-log.info("Behandler sak for bruker", kv("sakId", sak.id), kv("tema", sak.tema))
+## accessPolicy som first-line defense
 
-// ❌ Aldri logg FNR, navn eller annen PII
-log.info("Behandler sak for bruker ${bruker.fnr}")
-```
-
-## Hemmeligheter fra miljøvariabler
-
-```kotlin
-// ✅ Les fra miljø (Nais injiserer via Secret)
-val dbPassword = System.getenv("DB_PASSWORD")
-    ?: throw IllegalStateException("DB_PASSWORD mangler")
-
-// ❌ Hardkodet hemmelighet
-val dbPassword = "supersecret123"
-```
-
-## Nettverkspolicy (Nais)
+`accessPolicy` i Nais-manifestet er første forsvarslinje — ikke en tilleggsmekanisme. Default deny på Nais-plattformen betyr at glemt regel = brutt tilgang, ikke åpen tilgang. Men feil regel = eksponert tjeneste.
 
 ```yaml
 spec:
   accessPolicy:
     inbound:
       rules:
-        - application: frontend-app
+        - application: min-frontend         # eksplisitt navngitt caller
     outbound:
       rules:
         - application: pdl-api
           namespace: pdl
           cluster: prod-gcp
       external:
-        - host: api.external-service.no
+        - host: api.ekstern-tjeneste.no     # kun når strengt nødvendig
 ```
 
-## OWASP Top 10
+**Kritiske vurderinger ved gjennomgang:**
 
-### A01: Broken Access Control
+- **Ingen åpen inbound**: `inbound.rules` må være eksplisitt liste. Fravær av rules = ingen tilgang (OK for intern batch/job), men åpne wildcards eller mange generelle rules krever begrunnelse.
+- **Inbound vs. auth-kode speiler hverandre**: Hver app i `inbound.rules` skal være validert i auth-koden (f.eks. `azp`-sjekk mot `AZURE_APP_PRE_AUTHORIZED_APPS`). Diff avvik — enten død kode eller manglende nettverksregel.
+- **Outbound er et sikkerhetstiltak, ikke bare ruting**: Begrenset outbound = begrenset blast radius hvis appen kompromitteres. Outbound `external` må ha tydelig formål og eier.
+- **Cluster/namespace stemmer med miljøet**: `prod-gcp` vs `dev-gcp` — feil cluster i outbound = tjeneste fungerer ikke i prod, men blir ofte oppdaget sent.
 
-```kotlin
-// ✅ Sjekk at bruker har tilgang til ressursen
-@GetMapping("/api/vedtak/{id}")
-fun getVedtak(@PathVariable id: UUID): ResponseEntity<VedtakDTO> {
-    val bruker = hentInnloggetBruker()
-    val vedtak = vedtakService.findById(id)
-    if (vedtak.brukerId != bruker.id) {
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).build()
-    }
-    return ResponseEntity.ok(vedtak.toDTO())
-}
+## Sikkerhetschampion-rolle og eskalering
 
-// ❌ Ingen tilgangskontroll (IDOR)
-@GetMapping("/api/vedtak/{id}")
-fun getVedtak(@PathVariable id: UUID) = vedtakService.findById(id)
-```
+Hvert team har en sikkerhetschampion (eller kan eskalere til plattformens sikkerhetsfunksjon). Denne rollen eies av teamet, ikke av `security-review`-skillen.
 
-### A03: Injection
+**Når skillen håndterer det (ingen eskalering):**
 
-```kotlin
-// ✅ Parameterisert spørring
-jdbcTemplate.query("SELECT * FROM bruker WHERE fnr = ?", mapper, fnr)
+- Parameteriserte spørringer, input-validering, standard OWASP-mønstre.
+- CEF-auditlogg ved visning av personopplysninger (mønster er etablert).
+- accessPolicy-oppsett for standard inbound/outbound.
+- Trivy/zizmor-funn med kjente fixes.
 
-// ❌ String-sammenslåing
-jdbcTemplate.query("SELECT * FROM bruker WHERE fnr = '$fnr'", mapper)
-```
+**Når du eskalerer til sikkerhetschampion (eller `#appsec`):**
 
-### A05: Security Misconfiguration
+- **Ny klasse data**: Første gang teamet behandler helseopplysninger, barnevernsdata eller kode 6/7.
+- **DPIA-behov**: Ny behandling med personopplysninger eller vesentlig endring i eksisterende behandling. Se `references/nav-threat-model.md`.
+- **Ny integrasjon med eksternt domene**: `outbound.external` mot leverandør/tredjepart.
+- **Endring i autentiseringsmekanisme**: Bytte mellom Azure AD/TokenX/ID-porten/Maskinporten, eller ny RBAC-modell.
+- **Mistanke om hendelse**: Lekket secret, uautorisert tilgang, avvikende bruksmønster — ikke vent, eskaler umiddelbart.
+- **Compliance-vurdering utenfor standardmønster**: Tilsynssaker, Datatilsynet-henvendelser, svar på revisjon.
 
-```kotlin
-// ✅ CORS kun for kjente domener
-@Bean
-fun corsFilter() = CorsFilter(CorsConfiguration().apply {
-    allowedOrigins = listOf("https://my-app.intern.nav.no")
-    allowedMethods = listOf("GET", "POST")
-})
+**Hastegrad:**
 
-// ❌ Åpen CORS
-allowedOrigins = listOf("*")
-```
+- **Akutt (ring/ping umiddelbart)**: Aktiv hendelse, eksponert secret i git-historikk, mistanke om databehandlingsbrudd.
+- **Samme dag**: Ny ekstern integrasjon i prod, endret autentiseringsflyt, nye datakategorier.
+- **Planlagt (Slack/issue)**: DPIA-forberedelse, arkitekturgjennomgang, trusselmodellering.
 
-### A07: Cross-Site Scripting (XSS)
+Kontaktkanaler (prosess, ikke personer): Teamets interne sikkerhetschampion-kanal; Navs `#appsec` for generelle spørsmål; `#auditlogging-arcsight` for auditlogg; plattformens sikkerhetsfunksjon for hendelser.
 
-```tsx
-// ✅ React escaper automatisk
-<BodyShort>{bruker.navn}</BodyShort>
-
-// ❌ Raw HTML injection
-<div dangerouslySetInnerHTML={{ __html: userInput }} />
-```
-
-## GDPR og personvern
-
-- Følg dataminimering, formålsbinding og innebygd personvern.
-- Dokumenter behandlingsgrunnlag før innsamling eller visning av personopplysninger.
-- Planlegg sletting, anonymisering og audit-logging sammen med funksjonaliteten.
-- Samtykke skal være eksplisitt og lett å trekke tilbake når det er behandlingsgrunnlaget.
-
-Se `references/gdpr-privacy.md` for detaljer om PII-kategorisering, retention, anonymisering, CEF-auditlogging og samtykkehåndtering.
-
-## API-sikkerhet
-
-- Begrens eksponering med rate limiting, grenser for request-størrelse og eksplisitt CORS.
-- Bruk sikre headers, sikre cookies/sesjoner og `Nav-Call-Id`.
-- Vurder STRIDE før nye endepunkter, spesielt for sensitive operasjoner og integrasjoner.
-- Ha en enkel plan for hendelseshåndtering ved funn i gjennomgang eller drift.
-
-Se `references/api-security.md` for Kotlin/Spring-eksempler og mer detaljerte mønstre.
-
-## Filopplasting
-
-```kotlin
-// ✅ Valider filtype, størrelse og magic bytes
-fun validateUpload(file: MultipartFile) {
-    require(file.size <= 10 * 1024 * 1024) { "Fil for stor (maks 10 MB)" }
-    require(file.contentType in ALLOWED_TYPES) { "Ugyldig filtype" }
-    val bytes = file.bytes.take(8).toByteArray()
-    require(verifyMagicBytes(bytes, file.contentType!!)) { "Filinnhold matcher ikke type" }
-}
-```
-
-## Avhengigheter
+## Automatiserte skanninger
 
 ```bash
-# Kotlin
-./gradlew dependencyUpdates
-./gradlew dependencyCheckAnalyze
+# Sårbarheter og hemmeligheter i repoet
+trivy repo .
 
-# Node/TypeScript
-npm audit
-npm audit fix
+# HIGH/CRITICAL CVE-er i container-image
+trivy image <image-name> --severity HIGH,CRITICAL
+
+# GitHub Actions workflows
+zizmor .github/workflows/
+
+# Hemmeligheter i git-historikk
+git log -p --all -S 'password' -- '*.kt' '*.ts' | head -100
+git log -p --all -S 'secret' -- '*.kt' '*.ts' | head -100
 ```
 
-## Sjekkliste
+## Hemmeligheter
 
-- [ ] SQL-spørringer er parameteriserte
-- [ ] Ingen PII i logger (FNR, navn, adresse)
-- [ ] Hemmeligheter kun fra miljøvariabler
-- [ ] Nais accessPolicy er eksplisitt (ingen åpen inbound)
-- [ ] CORS begrenset til kjente domener
-- [ ] Rate limiting vurdert for sensitive eller publikt eksponerte endepunkter
-- [ ] Grenser for request-størrelse og payload-validering er på plass der store kall kan misbrukes
-- [ ] Sikkerhetsheadere er satt for web/API-flater
-- [ ] Sesjoner/cookies er `Secure`, `HttpOnly` og har riktig `SameSite`
-- [ ] `Nav-Call-Id` brukes for korrelasjon mellom tjenester
-- [ ] Input validert og sanitert
-- [ ] Tilgangskontroll sjekker eierskap (ikke bare autentisering)
-- [ ] Filopplasting validerer type, størrelse og innhold
-- [ ] Behandlingsgrunnlag for persondata er dokumentert
-- [ ] Retention, sletting eller anonymisering er definert for lagret persondata
-- [ ] Samtykke lagres og kan trekkes tilbake når samtykke er behandlingsgrunnlaget
-- [ ] Audit logging er vurdert for visning av personopplysninger
-- [ ] Avhengigheter oppdatert og sårbarhetsskannet
-- [ ] `trivy repo .` uten HIGH/CRITICAL funn
-- [ ] `zizmor` godkjent for alle GitHub Actions workflows
-- [ ] Det finnes ingen committede hemmeligheter i Git-historikken
+```kotlin
+// OK — fra miljø (Nais injiserer via Console-secret)
+val dbPassword = System.getenv("DB_PASSWORD")
+    ?: error("DB_PASSWORD mangler")
+
+// Aldri — hardkodet
+val dbPassword = "supersecret123"
+```
+
+Secrets opprettes i Nais Console og injiseres via `envFrom`/`filesFrom`. Kopier aldri prod-secrets lokalt.
+
+## Sjekkliste (Nav-fokus)
+
+- [ ] PII-klassifisering er avklart for all data tjenesten behandler (strengt fortrolig/fortrolig/intern/åpen)
+- [ ] Ingen FNR, navn, helse- eller sensitive ytelsesdata i standardlogger
+- [ ] CEF-auditlogg dekker visning av personopplysninger til Nav-ansatte
+- [ ] `accessPolicy.inbound` er eksplisitt og speiler auth-kodens validering
+- [ ] `accessPolicy.outbound` begrenset til nødvendige tjenester/hoster med cluster/namespace korrekt
+- [ ] Secrets kun fra Nais Console, ingen hardkodede verdier eller prod-secrets lokalt
+- [ ] `Nav-Call-Id` propageres for korrelasjon på tvers av tjenester
+- [ ] Behandlingsgrunnlag, retention og sletting er dokumentert for persondata
+- [ ] Parameteriserte spørringer, input validert, tilgangskontroll sjekker eierskap
+- [ ] `trivy repo .` uten HIGH/CRITICAL, `zizmor` OK, ingen committede secrets
+- [ ] Eskalering til sikkerhetschampion er vurdert for nye datakategorier, integrasjoner eller auth-endringer
+- [ ] DPIA-behov vurdert (se `references/nav-threat-model.md`) før ny behandling av personopplysninger
 
 ## Referanser
 
@@ -209,7 +139,6 @@ npm audit fix
 |---------|-------------|
 | [sikkerhet.nav.no](https://sikkerhet.nav.no) | Navs Golden Path for sikkerhet |
 | auth-overview skill | JWT-validering, TokenX, ID-porten, Maskinporten |
-| `references/gdpr-privacy.md` | GDPR, personvern, retention, anonymisering og CEF-auditlogging |
-| `references/api-security.md` | API-sikkerhet, headere, CORS, cookies, STRIDE og hendelseshåndtering |
-
-For GDPR-detaljer, se `references/gdpr-privacy.md`. For API-sikkerhet, se `references/api-security.md`.
+| `references/nav-threat-model.md` | Dyp trusselmodellering (STRIDE i Nav-kontekst), DPIA-prosess, audit-logging-krav, Datatilsynet-varsling |
+| `references/gdpr-privacy.md` | Nav-spesifikk PII-kategorisering og pekere til DPIA/CEF/retention |
+| `references/api-security.md` | Nav-signal: Nav-Call-Id, Nav-Consumer-Id, accessPolicy som primærmekanisme |

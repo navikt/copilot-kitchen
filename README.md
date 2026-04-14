@@ -90,9 +90,9 @@ Bruk **@hovmester** som inngang til alt — den koordinerer planlegging, impleme
 
 | Collection | Innhold |
 |---|---|
-| `hovmester` (alltid inkludert) | 6 agenter, 3 Nav-brede instructions, 10 generiske skills, issue templates, PR-mal |
+| `hovmester` (alltid inkludert) | 6 agenter, 3 Nav-brede instructions, 13 skills (inkl. nav-troubleshoot, nav-architecture-review, accessibility-review), issue templates, PR-mal |
 | `backend` | Kotlin instruction + 7 backend-skills (Ktor, Spring, Flyway, Kafka, Postgres, API-design, auth) |
-| `frontend` | Frontend og accessibility instructions + 3 frontend-skills (Aksel, auth, Lumi) |
+| `frontend` | Frontend og accessibility instructions + 4 frontend-skills (Aksel, auth, Lumi, accessibility-review) |
 
 **Eksempler:**
 - `"backend"` — backend-repo

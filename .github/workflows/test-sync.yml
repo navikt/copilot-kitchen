@@ -4,6 +4,8 @@ on:
   pull_request:
     paths:
       - 'scripts/**'
+      - 'dist/**'
+      - 'collections.yml'
 
 permissions:
   contents: read
@@ -24,4 +26,4 @@ jobs:
 
       - name: Run tests
         working-directory: scripts
-        run: python -m pytest test_sync.py -v
+        run: python -m pytest test_sync.py test_content.py -v

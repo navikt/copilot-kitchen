@@ -92,7 +92,7 @@ Det finnes også `2xl` (1440px) i tokenlaget, men de fleste layout-eksempler i r
 
 ## Semantiske tokens
 
-Disse er gode standardvalg for vanlige flater og tekst.
+Disse er gode standardvalg for vanlige flater og tekst. For det fulle `--ax-*`-laget og `data-color`-mekanismen, se `references/semantic-tokens.md`.
 
 | Token | Hva det er | Nåværende verdi |
 |---|---|---|

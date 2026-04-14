@@ -58,6 +58,19 @@ Instructions kan referere til skills for dypere veiledning. Eksempel: `kotlin.in
 ### Prompts — deprecated
 `.github/prompts/*.prompt.md` er erstattet av skills. Ikke distribuer prompts.
 
+## Lean-filter for skill- og instruction-innhold
+
+Alt distribuert innhold skal bestå lean-filteret:
+
+1. **Kan modellen (Claude/GPT) dette fra før?** Eksempler som droppes: Playwright-API, OpenAPI-syntaks, WCAG-basics, Kotlin/Spring/Ktor-syntaks, React, SQL-indeksering, OAuth2/JWT-mekanikk, testpyramide-terminologi.
+2. **Lærer det å jobbe i Nav, eller styrker det agenten på annen måte?** Eksempler som beholdes: Nais, Wonderwall, accessPolicy, TokenX, Rapids & Rivers, Aksel, HikariCP-i-containere, Nav-team-koordinering.
+
+Drop hvis ja på 1 og nei på 2. Hold teknologiagnostisk der mulig.
+
+## Betingede råd (respekter eksisterende stack)
+
+Skills skal gi betingede råd basert på hva repoet faktisk bruker, ikke anta at Nav-mønstre er universelle. Eksempel: `kafka-topic` skal detektere om repoet bruker Rapids & Rivers eller plain Kafka, og følge eksisterende stil. Ikke foreslå migrasjon mellom stiler som del av uavhengige oppgaver. LLM kan lese `build.gradle.kts` / `pom.xml` / konfig-filer; skrivereglen er at skills ber den gjøre det.
+
 ## Konvensjoner
 
 ### Navngivning i collections.yml

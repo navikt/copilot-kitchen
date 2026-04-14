@@ -1,96 +1,90 @@
 ---
 name: api-design
-description: REST API-design for Ktor — URL-konvensjoner, StatusPages-basert feilhåndtering, paginering og input-validering
+description: Nav-konvensjoner for API-design — accessPolicy.inbound, TokenX-inbound-validering, API-versjonering koordinert med andre team. Teknologiagnostisk.
 ---
-# API Design — REST
-Standarder for REST API-design i Nav-applikasjoner bygget med Ktor.
-## URL-konvensjoner
-```
-GET    /api/v1/vedtak              → List vedtak
-GET    /api/v1/vedtak/{id}         → Hent enkelt vedtak
-POST   /api/v1/vedtak              → Opprett vedtak
-PUT    /api/v1/vedtak/{id}         → Oppdater vedtak (full)
-PATCH  /api/v1/vedtak/{id}         → Oppdater vedtak (delvis)
-DELETE /api/v1/vedtak/{id}         → Slett vedtak
+
+# API Design — Nav-konvensjoner
+
+Dette dokumentet dekker **Nav-spesifikke** konvensjoner for API-design. Generelle REST-/HTTP-mønstre er ikke dekket her — bruk teamets etablerte praksis.
+
+## accessPolicy.inbound — hvem får kalle API-et?
+
+Nav-API-er eksponert via nais må eksplisitt liste hvilke andre applikasjoner som har tilgang. Ingen implisitt "alle Nav-apper". Navngi team og app.
+
+```yaml
+# nais.yaml (utdrag — teknologiagnostisk: samme prinsipp gjelder uansett rammeverk)
+spec:
+  accessPolicy:
+    inbound:
+      rules:
+        - application: saksbehandling-frontend
+          namespace: team-vedtak
+          cluster: prod-gcp
+        - application: oppfolging-api
+          namespace: team-oppfolging
+          cluster: prod-gcp
 ```
 
 ### Regler
-- Bruk **flertall** for ressursnavn: `/vedtak`, `/saker`, `/brukere`
-- Bruk **kebab-case** for sammensatte navn: `/sykmeldinger`, `/oppfolgingsplaner`
-- Bruk **path params** for identifikatorer: `/vedtak/{id}`
-- Bruk **query params** for filtrering: `/vedtak?status=AKTIV&side=2`
-- Maks **3 nivåer** nesting: `/saker/{id}/vedtak` (ikke dypere)
+- **Aldri** tom `inbound` på intern-API uten å mene det: tom inbound stenger API-et helt (Nais krever eksplisitt liste — også for kallere i samme namespace).
+- **Aldri** `*` wildcard uten eksplisitt begrunnelse + sikkerhetsreview.
+- Koordiner med konsumerende team **før** du legger dem til — de må også ha `outbound`-regel mot deg.
+- Fjern konsumenter som ikke lenger bruker API-et (revideres kvartalsvis).
 
-## HTTP-statuskoder
-| Kode | Bruksområde |
-|------|-------------|
-| 200 | Vellykket henting/oppdatering |
-| 201 | Ressurs opprettet (med `Location`-header) |
-| 204 | Vellykket sletting (ingen body) |
-| 400 | Ugyldig request (validering) |
-| 401 | Ikke autentisert |
-| 403 | Ikke autorisert (mangler tilgang) |
-| 404 | Ressurs ikke funnet |
-| 409 | Konflikt (duplikat, utdatert versjon) |
-| 422 | Ugyldig input som er syntaktisk korrekt |
-| 500 | Intern feil |
+## TokenX-inbound-validering
 
-## Feilhåndtering — Ktor StatusPages
+API-er som eksponeres for frontend via TokenX må validere token på serversiden. Rammeverket (Ktor, Spring, annet) er uvesentlig — valideringsreglene er like:
 
-Bruk `StatusPages`-pluginen med en `sealed class ApiErrorException`-hierarki for strukturert feilhåndtering.
-Alle exceptions kastet i routes fanges automatisk og mappes til en `ApiError`-respons med riktig HTTP-statuskode.
+- **Issuer**: matcher TokenX-issuer for riktig miljø (dev-gcp / prod-gcp).
+- **Audience (`aud`)**: matcher din applikasjons client-id.
+- **Signatur**: verifiser mot TokenX JWKS-endpoint.
+- **`pid`-claim**: inneholder brukerens fødselsnummer — bruk denne som autoritativ brukeridentitet, **ikke** noe som kommer fra request body.
+- **`acr`-claim**: sjekk nivå (`Level4` / `idporten-loa-high`) hvis API-et krever høyt innloggingsnivå.
+- **Exp/nbf**: standard gyldighetssjekk.
 
-Nøkkelkomponenter:
-- `ApiError` — Strukturert feilrespons med `status`, `type`, `message`, `path` og `timestamp`
-- `ErrorType` enum — Kategoriserer feil (`NOT_FOUND`, `BAD_REQUEST`, `CONFLICT`, osv.)
-- `ApiErrorException` sealed class — Subklasser for `ForbiddenException`, `BadRequestException`, `NotFoundException`, osv.
-- `installStatusPages()` — Logger og responderer med riktig `ApiError`
-- `determineApiError()` — Mapper Ktor-exceptions og egne exceptions til `ApiError`
+Logg aldri hele tokenet. Logg `sub`/`jti` for sporbarhet hvis nødvendig.
 
-Se [references/error-handling.md](references/error-handling.md) for komplett implementasjon.
+## API-versjonering — koordiner med andre team
 
-## Paginering
+Breaking changes på API-er som andre Nav-team konsumerer er et **koordineringsproblem**, ikke bare et teknisk problem.
 
-Bruk `PaginatedResponse<T>` med `innhold`, `side`, `antallPerSide`, `totaltAntall` og `totaltAntallSider`.
-Maks 100 elementer per side. Default er 20.
+### Før brudd-endring
+1. **Identifiser konsumenter** via `accessPolicy.inbound` + faktisk trafikk (logger/metrics).
+2. **Varsle team eksplisitt** — Slack, e-post, eller teamets foretrukne kanal. Ikke anta at de leser changelog.
+3. **Avtal overgangsvindu** — typisk 1–3 måneder der begge versjoner lever parallelt.
+4. **Versjoner URL-en** (`/v1/` → `/v2/`) eller bruk annen mekanisme teamet ditt har etablert.
+5. **Deprecering først**: merk gammel versjon som deprecated, gi konsumentene tid.
 
-Se [references/code-examples.md](references/code-examples.md) for implementasjon og responseksempel.
+### Ikke-brudd-endringer (trygge)
+- Legge til nye felter i response.
+- Gjøre nye request-felter valgfrie.
+- Legge til nye endpoints.
 
-## Input-validering
+Disse kan rulles ut uten koordinering, men dokumenter dem.
 
-Valider all input tidlig i route-handleren. Kast `ApiErrorException.BadRequestException` ved ugyldig input.
-Bruk `@Serializable` data classes for request-bodies med eksplisitte valideringsregler.
+## API-katalog
 
-Se [references/code-examples.md](references/code-examples.md) for eksempel med `CreateVedtakRequest`.
+Registrer API-et i [apikatalog.nav.no](https://apikatalog.nav.no) slik at andre team kan finne det. Særlig viktig for API-er som kan ha bredere nytte enn umiddelbare konsumenter.
 
-## Versjonering
+## Dokumentasjon — bruk teamets format
 
-- Bruk URL-versjonering: `/api/v1/...`
-- Bump versjon kun ved breaking changes
-- Støtt gammel versjon i overgangsperiode
-- Dokumenter endringer i changelog
+Dokumenter API-ene i formatet **teamet allerede bruker** (OpenAPI/Swagger, Postman-collection, Markdown, AsyncAPI for event-drevne API-er, tilsvarende). Ikke påtving ett bestemt format. Målet er at konsumenter finner og forstår kontrakten — ikke formatvalget i seg selv.
 
 ## Grenser
 
-### ✅ Alltid
-- Flertall for ressursnavn
-- Strukturert ApiError via StatusPages
-- Valider all input
-- Location-header ved 201
+### Alltid
+- Eksplisitt `accessPolicy.inbound` med navngitte team/apper.
+- TokenX-validering (issuer, audience, signatur, `pid`) for frontend-API-er.
+- Koordinere brudd-endringer med konsumerende team før release.
+- Aldri PII (FNR, navn) i URL-er eller query params — bruk `pid` fra token.
 
-### ⚠️ Spør først
-- Nye API-versjoner (breaking changes)
-- Endring av eksisterende kontrakt
-- Asynkrone operasjoner (202 Accepted)
+### Spør først
+- Fjerning av konsument fra `accessPolicy.inbound`.
+- Brudd-endring i kontrakt.
+- Eksponering av API utenfor `cluster` (ekstern tilgang).
 
-### 🚫 Aldri
-- Verb i URL-er (`/getVedtak`, `/createSak`)
-- PII i URL-er eller query params (FNR, navn)
-- 200 med feilmelding i body
-- Ukonsistent navngiving mellom endepunkter
-- Kaste exceptions som ikke fanges av StatusPages uten bevisst valg
-
-## Referansefiler
-
-- [references/error-handling.md](references/error-handling.md) — Komplett Ktor StatusPages-implementasjon (ApiError, ApiErrorException, installStatusPages, determineApiError)
-- [references/code-examples.md](references/code-examples.md) — Pagineringsrespons og input-valideringseksempler
+### Aldri
+- Tom eller wildcard `inbound` uten sikkerhetsreview.
+- Stole på brukeridentitet fra request body — bruk token-claim.
+- Silent breaking changes.
+- Logge hele tokens eller PII.

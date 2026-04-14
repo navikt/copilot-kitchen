@@ -1,6 +1,6 @@
 ---
 name: brainstorm
-description: Utforsk et problem og land på et design før planlegging. Brukes for å forstå hva som skal bygges, vurdere alternativer og bli enig om tilnærming — FØR kode skrives eller plan lages.
+description: Utforsk et problem og land på et design før planlegging. Brukes for å forstå hva som skal bygges, vurdere alternativer og bli enig om tilnærming — FØR kode skrives eller plan lages. Dekker også ny tjeneste, ny arketype, modernisering og kravavdekking for Nav-prosjekter.
 ---
 
 # Brainstorm — fra idé til design
@@ -21,6 +21,18 @@ Utforsk kodebasen før du stiller spørsmål:
 - Les relevante filer og dokumentasjon
 - Sjekk eksisterende mønstre
 - Forstå rammer og avhengigheter
+
+### 1b. Velg dybde
+
+- Mindre endring / tilnærming er opplagt → fortsett til Steg 2
+- Ny tjeneste, ny arketype, modernisering → kjør Nav-kravavdekking:
+  1. Velg arketype (Backend API / Hendelsekonsument / Frontend innbygger /
+     Frontend saksbehandler / Naisjob / Fullstack)
+  2. Still Nav-domene-spørsmål fra [references/nav-arketyper.md](./references/nav-arketyper.md)
+  3. Sjekk blinde flekker fra [references/blind-spots.md](./references/blind-spots.md)
+  4. Vurder dataklassifisering fra [references/data-classification.md](./references/data-classification.md)
+  5. Generer strukturert kravdokument
+  6. Fortsett til Steg 2 med konkretisert kontekst
 
 ### 2. Avklarende spørsmål
 

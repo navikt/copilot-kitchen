@@ -50,6 +50,53 @@ For filer som finnes i begge repos, sammenlign dybde:
 - **Agenter**: Vurder om vi trenger agenten, eller om en instruction/skill dekker behovet
 - **Progressive disclosure**: Instructions bør referere til skills for dypere veiledning
 
+### 4b. Lean-filter
+
+Før adopsjon: still begge spørsmål (se `copilot-instructions.md` → Lean-filter). Konkret, dropp:
+
+- **LLM vet dette fra før**: Playwright-API-snutter, OpenAPI 3 YAML-syntaks, WCAG 2.x-basics, Kotlin/Spring Boot/Ktor-idiomer, React hooks-grunnkurs, SQL-indeksteori, OAuth2/JWT-flyt-beskrivelser, testpyramide-pedagogikk.
+- **Generiske tekno-prompts** uten Nav-vinkel.
+- **Strukturelle valg fra uvaliderte systemer**: Ikke kopier arkitektur fra upstream-skill kun fordi strukturen er ny.
+
+Behold innhold som binder LLM til Nav-spesifikke gotchas (Nais, Wonderwall, accessPolicy, TokenX, Rapids & Rivers, Aksel, HikariCP-i-containere, team-koordineringspraksis).
+
+### 4c. Betingede råd-regelen
+
+Alle nye skills må formuleres slik at de leser repoets faktiske stack før de gir råd — ikke anta Nav-default som universelt. Eksempel: en `kafka-topic`-skill ber LLM sjekke `build.gradle.kts` for Rapids & Rivers vs plain Kafka og følge eksisterende stil. Migrasjoner mellom stiler skal aldri sneakes inn som del av uavhengige oppgaver.
+
+### 4d. Soft cap 200 linjer for nye SKILL.md
+
+Hold SKILL.md under ~200 linjer. Større innhold → split til `references/`-filer (f.eks. `references/lean-filter.md`, `references/regression-checks.md`) og pek til dem fra SKILL.md. Eat-your-own-dog-food: denne skillen er selv splittet når den passerer taket.
+
+### 4e. Placeholder-regel for sensitive referansefiler
+
+Ingen ekte personopplysninger eller interne detaljer i `references/`:
+- Fødselsnummer: bruk `00000000000` (11 nuller).
+- Interne kontakter: ingen navn, bruk roller (f.eks. "NAIS-plattformteamet").
+- Case-beskrivelser: syntetiske eksempler, ingen reelle saksdetaljer.
+
+### 4f. Regresjonssjekker for upstream-sync
+
+Før PR merges, verifiser at adopterte filer ikke reintroduserer droppede mønstre:
+
+- Ingen `@nais-agent` / `@auth-agent` / `@kafka-agent` / `@nav-pilot`-agent-referanser i adopterte skills (spesialistagentene er avviklet til fordel for skills).
+- Ingen nye `actions/*@v<N>`, `@main`, `@master`-eksempler i CI/CD-snutter — SHA-pinning kreves (`actions/checkout@<40-char-sha> # v4.2.2`).
+- Ingen ekte fnr, team-medlemsnavn eller case-beskrivelser (se placeholder-regel).
+
+### 4g. Rolle-spill-testing mot begge modeller
+
+Før merge: kjør en realistisk prompt mot både Claude (Opus) og GPT (den consumer-team faktisk bruker i Copilot) for den adopterte skillen. Verifiser at begge:
+1. Laster skillen ved forventet trigger.
+2. Gir betingede råd (ikke Nav-default antatt).
+3. Respekterer lean-filteret (ikke repeterer LLM-kunnskap).
+
+### 4h. Droppeliste (ikke adopter)
+
+- **Spesialistagenter som dupliserer skill-innhold** (f.eks. `@nais-agent` når `nais-deploy`-skillen dekker samme).
+- **CI/CD-snutter med usikre pinninger** (`@v4`, `@main`, `@master`).
+- **Generiske tekno-prompts** (React-hooks-forklaring, SQL-optimalisering-guide) uten Nav-vinkel.
+- **Strukturelle valg fra uvaliderte systemer** — vent til mønsteret er bevist i produksjon et sted.
+
 ### 5. Prioriteringsliste
 
 Fokuser på disse kategoriene i denne rekkefølgen:

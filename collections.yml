@@ -15,12 +15,15 @@ hovmester:
     - docker
     - github-actions
   skills:
+    - accessibility-review
     - brainstorm
     - conventional-commit
     - grill-me
     - issue-management
     - klarsprak
     - nais-manifest
+    - nav-architecture-review
+    - nav-troubleshoot
     - observability-setup
     - pull-request
     - security-review
@@ -51,6 +54,7 @@ frontend:
     - accessibility
     - frontend
   skills:
+    - accessibility-review
     - aksel-design
     - auth-overview
     - lumi-survey

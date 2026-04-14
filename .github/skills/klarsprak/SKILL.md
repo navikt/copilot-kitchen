@@ -4,9 +4,7 @@ description: Norsk teknisk redaktør — klarspråk, AI-markører, anglismer, fa
 ---
 # Klarspråk — norsk teknisk skriving
 
-Retningslinjer for norsk bokmål i teknisk dokumentasjon, UI-tekst og PR-beskrivelser.
-
-Basert på Språkrådets klarspråk-prinsipper, ISO 24495-1 og Navs språkprofil.
+Retningslinjer for norsk bokmål i teknisk dokumentasjon, UI-tekst, PR-beskrivelser og blogginnlegg. Basert på Språkrådets klarspråk-prinsipper, ISO 24495-1, Digdirs klarspråk-veileder og Navs språkprofil. Språkloven pålegger offentlige organer klart, korrekt språk tilpassa mottakerne.
 
 ## Klarspråk
 
@@ -50,72 +48,73 @@ Start med konklusjonen. Bakgrunn og kontekst kommer etterpå.
 
 ## AI-markører
 
-Fjern mønstre som avslører KI-generert tekst.
+Fjern mønstre som avslører KI-generert tekst. Fyldig liste og eksempler i `references/ai-markorer.md`.
 
-### Svulstige ord
+### Svulstige ord — kort oversikt
 
 | AI-markør | Gjør i stedet |
 |-----------|---------------|
-| "banebrytende", "revolusjonerende" | Konkrete beskrivelser |
+| "banebrytende", "revolusjonerende", "innovativ" | Konkrete beskrivelser |
 | "robust", "helhetlig", "sømløs" | Skriv om eller dropp |
 | "spiller en avgjørende rolle" | Gå rett på sak |
-| "effektivisere prosessen" | Si hvilken prosess og hvordan |
-| "digital transformasjon" | Si hva som endres konkret |
-| "sikre at" | "passe på", "gjøre X mulig" |
-| "sørge for at" | "gjøre", "passe på" |
-| "muliggjøre" | "gjøre mulig", "gi rom for" |
-| "understreke behovet for" | Si behovet direkte |
-| "hensynta" | "ta hensyn til" |
+| "muliggjøre", "tilrettelegge for" | Si hva som skjer |
+| "sikre at", "sørge for at" | "passe på", "gjøre" |
 | "implementere" | "innføre", "ta i bruk", "lage" |
-| "ivareta" | "ta vare på", "følge opp" |
-| "tilrettelegge for" | "legge til rette for", "gjøre det enklere" |
-| "understøtte" | "støtte" |
+| "ivareta", "understøtte" | "ta vare på", "støtte" |
 
-### Åpnings- og avslutningsfraser (kutt disse)
+### Engelske AI-ord som siver inn i norsk
 
-- "det er verdt å merke seg", "det er viktig å påpeke"
-- "la oss utforske", "la oss dykke ned i"
-- "oppsummert kan man si at", "avslutningsvis"
+Disse engelske ordene brukes mye oftere i KI-generert norsk enn i naturlig norsk. Erstatt:
 
-### Strukturelle mønstre
+- **delve into** → fordype seg i (ofte: bare skriv innholdet)
+- **leverage** → utnytte, bruke
+- **landscape** → område, felt, markedet, situasjonen
+- **navigate** → håndtere, forholde seg til
+- **streamline** → effektivisere (si heller hva som blir enklere)
+- **foster** → fremme (si heller hva du gjør konkret)
+- **realm** → område, felt
+- **underscore** → understreke (si heller poenget direkte)
+- **crucial** → avgjørende (si heller hvorfor det er viktig)
 
-- Fjern oppsummeringssetninger som bare gjentar det du har skrevet
-- Ikke tving balanse mellom alternativer når ett er bedre
-- Varier grammatisk struktur i kulepunkter
-- Ikke overforklar ting som er åpenbare for målgruppa
+### Tegnsetting som AI-markører
 
-### Overgangsord og setningsbinding
+KI legger ofte inn fast tegnsetting som skiller teksten fra naturlig norsk. Rens bort.
 
-Varier overgangene mellom setninger og avsnitt. Unngå å starte mange setninger etter hverandre med:
+- **Em-dash (—) i annethvert kulepunkt**: bruk sjelden. Varier med kolon, parentes eller omskriving.
+- **Kolon i hver overskrift** (`Deploy: slik gjør vi det`): varier overskriftsform.
+- **Overforbruk av semikolon**: i norsk teknisk tekst er semikolon sjelden naturlig. Del opp eller bruk punktum.
+- **Utropstegn i teknisk tekst**: dropp.
 
-- "Videre", "I tillegg", "Dessuten"
-- "Det er viktig å", "Det er verdt å"
-- "For å sikre at", "Med tanke på"
+### Åpninger, oppsummeringer og overgangsord
 
-Bruk i stedet konkrete subjekter: "Teamet ...", "Koden ...", "Tjenesten ..."
+Kutt: "det er verdt å merke seg", "i dagens verden", "la oss dykke ned i", "oppsummert kan man si at", "avslutningsvis". Unngå "Videre", "I tillegg", "Dessuten" som paragrafåpner — bruk heller konkrete subjekter ("Teamet ...", "Koden ..."). Fjern oppsummeringssetninger som bare gjentar det du har skrevet. Varier grammatisk struktur i kulepunkter.
 
 ## Fagtermer
 
 ### Alltid engelsk (ikke oversett)
 
-image, cluster, node, container, deployment, release, plugin, backup, failover, rollback, upstream, downstream, secret, namespace, pod, pipeline, workflow, runtime, framework, pull request, merge, commit, branch, rebase, endpoint, payload, token, scope, bug, hotfix, patch
+image, cluster, node, container, deployment, release, plugin, backup, failover, rollback, upstream, downstream, secret, namespace, pod, CRD, PVC, PDB, pull request, merge, commit, branch, rebase, token.
+
+Og disse — også alltid på engelsk:
+
+edge case, bug, bugfix, hotfix, patch, roadmap, governance, community, middleware, pipeline, workflow, runtime, framework, endpoint, payload, scope.
 
 ### Norsk er OK for
 
-feilsøking, oppgradering, sikkerhetskrav, vedlikehold, bidragsytere, brukervennlighet, tilgjengelighet, kodegjennomgang, avhengighet
+feilsøking, oppgradering, sikkerhetskrav, vedlikehold, bidragsytere, brukervennlighet, tilgjengelighet, kodegjennomgang, avhengighet.
 
 ### Sammensatte ord med engelske termer
 
-Bruk bindestrek: `image-bygg`, `CI-pipeline`, `deploy-steg`, `Kafka-topicet`, `GitHub-repoet`
+Bruk bindestrek: `image-bygg`, `CI-pipeline`, `deploy-steg`, `Kafka-topicet`, `GitHub-repoet`. Ikke særskriv: `Postgres operatoren` er feil.
 
 ## Anglismer
 
-### Unødvendige anglismer — bruk norsk
+Unødvendige anglismer — bruk norsk:
 
 | Anglisme | Norsk alternativ |
 |----------|-----------------|
 | "adressere et problem" | "løse", "fikse", "ta tak i" |
-| "på slutten av dagen" | "til syvende og sist" eller dropp |
+| "på slutten av dagen" | "til syvende og sist", eller dropp |
 | "ta eierskap til" | "ha ansvar for" |
 | "delivere" | "levere" |
 | "har du noen input?" | "har du innspill?" |
@@ -130,6 +129,9 @@ Bruk bindestrek: `image-bygg`, `CI-pipeline`, `deploy-steg`, `Kafka-topicet`, `G
 | "booste" | "øke", "forbedre" |
 | "aligne" | "samkjøre", "enes om" |
 | "triage" | "prioritere", "sortere" |
+| "være på samme side" | "være enige" |
+| "i henhold til" (overbrukt) | "etter", "ifølge" |
+| "per dags dato" | "nå", "i dag" |
 
 ## Nav-spesifikt
 
@@ -137,17 +139,19 @@ Bruk bindestrek: `image-bygg`, `CI-pipeline`, `deploy-steg`, `Kafka-topicet`, `G
 - Konsekvent bokmål, ikke bland inn nynorsk
 - Moderne, ledig bokmål: "framtid" over "fremtid"
 - "vi" ikke "man" i interne dokumenter
-- Skriv som om du forklarer til en kollega
+- Skriv som om du forklarer til en kollega, ikke som en pressemelding
 
 ## Teksttyper
 
 | Teksttype | Tone | Tips |
 |-----------|------|------|
-| ADR | Nøytral, teknisk | Kontekst → Beslutning → Konsekvenser. Ingen salgssnakk. |
-| README | Direkte, vennlig | Start med hva appen gjør, deretter oppsett. |
+| ADR | Nøytral, teknisk | Kontekst → Beslutning → Konsekvenser. Beslutning i presens, aktiv form. |
+| README | Direkte, vennlig | Start med hva appen gjør, deretter oppsett. Ikke selg prosjektet. |
+| Blogginnlegg | Personlig, konkret | Start med hva som er nytt, ikke historisk kontekst. "Vi" i aktiv form. Unngå AI-typisk "definere temaet"-innledning. |
 | UI-tekst | Enkel, handlingsrettet | Korte setninger. Brukeren er "du". |
+| PR-beskrivelse | Konkret | Hva endres, hvorfor. Se også `pull-request`-skillen. |
 
-For commit-meldinger, se `conventional-commit`-skillen. For PR-beskrivelser, se `pull-request`-skillen.
+For commit-meldinger, se `conventional-commit`-skillen.
 
 ## Tegnsetting
 
@@ -165,47 +169,7 @@ For commit-meldinger, se `conventional-commit`-skillen. For PR-beskrivelser, se 
 
 ## Før og etter
 
-```
-❌ Det er viktig å påpeke at Kubernetes representerer et betydelig skritt
-   fremover innen container-orkestrering.
-
-✅ Kubernetes orkestrerer containere. Vi bruker det til å kjøre og
-   skalere appene våre i clusteret.
-```
-
-```
-❌ Vi må adressere dette problemet og ta eierskap til prosessen.
-
-✅ Vi må fikse dette. Teamet har ansvar for å finne en løsning.
-```
-
-```
-❌ Operasjonen kunne ikke gjennomføres grunnet manglende
-   obligatoriske feltverdier i skjemaet.
-
-✅ Du må fylle ut alle påkrevde felt før du kan sende inn.
-```
-
-### README → rett på sak
-
-```
-❌ Dette prosjektet representerer et innovativt verktøy som
-   muliggjør effektiv håndtering av søknader. Det er utviklet
-   med tanke på å sette brukeren i sentrum.
-
-✅ Behandler søknader om foreldrepenger. Bygget med Kotlin/Ktor,
-   deployes til Nais.
-```
-
-### Unødvendig oppsummering → kutt
-
-```
-❌ Vi har nå gjennomgått de ulike aspektene ved migrasjonen.
-   Som vi har sett, er det flere viktige hensyn å ta. Oppsummert
-   kan man si at en vellykket migrering krever grundig planlegging.
-
-✅ (Kutt hele avsnittet. Leseren har allerede lest det du oppsummerer.)
-```
+Se `references/for-og-etter.md` for fyldige eksempler: feiloversatt fagterm, stiv tone, PR-beskrivelse, README, UI-tekst, unødvendig oppsummering.
 
 ## Grenser
 
@@ -226,6 +190,9 @@ For commit-meldinger, se `conventional-commit`-skillen. For PR-beskrivelser, se 
 
 ## Kilder
 
-- [Språkrådets klarspråk-prinsipper](https://sprakradet.no/Klarsprak/)
-- [ISO 24495-1](https://sprakradet.no/klarsprak/kunnskap-om-klarsprak/iso-standard-for-klarsprak/)
-- [Designsystemets tekstpraksis](https://designsystemet.no/no/blog/shared-guidelines-for-text/)
+- [Språkrådets klarspråk-prinsipper](https://sprakradet.no/Klarsprak/) og [KI-rapport](https://sprakradet.no/aktuelt/ki-sprakets-fallgruver/) (jan 2025)
+- [ISO 24495-1](https://sprakradet.no/klarsprak/kunnskap-om-klarsprak/iso-standard-for-klarsprak/) — internasjonal klarspråk-standard
+- [Digdirs klarspråk-veileder](https://www.digdir.no/klart-sprak/ny-veileder-om-klart-sprak-i-utvikling-av-digitale-tjenester/3603) — klarspråk i digitale tjenester
+- [Designsystemets tekstpraksis](https://designsystemet.no/no/blog/shared-guidelines-for-text/) — UI-tekst
+- [Termportalen](https://www.termportalen.no/) — norske faguttrykk (UiB/Språkrådet)
+- Adam Tzur / AIavisen og Kommunikasjonsforeningen — norske AI-markører og crowdsourcede lister

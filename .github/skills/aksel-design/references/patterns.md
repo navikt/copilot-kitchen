@@ -249,6 +249,164 @@ export function TagsContainer(): JSX.Element {
 }
 ```
 
+## Next.js-integrasjon
+
+Aksel-komponenter fungerer i Next.js (App Router og Pages Router). To ting å være bevisst på:
+
+**1. Bruk `LinkCard` med Next.js `Link`** så forhåndshenting (`prefetch`) og klient-navigering fungerer:
+
+```tsx
+import { LinkCard, LinkCardAnchor, LinkCardDescription, LinkCardTitle } from "@navikt/ds-react";
+import Link from "next/link";
+
+export function DashboardCard(): JSX.Element {
+  return (
+    <LinkCard>
+      <LinkCardTitle>
+        <LinkCardAnchor as={Link} href="/dashboard">Dashboard</LinkCardAnchor>
+      </LinkCardTitle>
+      <LinkCardDescription>Se statistikk og nøkkeltall.</LinkCardDescription>
+    </LinkCard>
+  );
+}
+```
+
+**2. Komponenter med intern state (`Dialog`, `DialogTrigger`, `ExpansionCard`, `Tabs`) er klient-komponenter.** Merk fila eller wrapperen med `"use client"` i App Router:
+
+```tsx
+"use client";
+
+import { Button, Dialog, DialogPopup, DialogTrigger } from "@navikt/ds-react";
+
+export function EditButton(): JSX.Element {
+  return (
+    <Dialog>
+      <DialogTrigger>
+        <Button>Edit</Button>
+      </DialogTrigger>
+      <DialogPopup>{/* ... */}</DialogPopup>
+    </Dialog>
+  );
+}
+```
+
+**3. SSR-considerations**: Aksel-komponenter rendrer server-side uten problemer. CSS-importen (`@import "@navikt/ds-css"`) bør ligge i `app/layout.tsx` (App Router) eller `pages/_app.tsx` (Pages Router) slik at den inkluderes i den kritiske stilen.
+
+**4. Sidecontainer med max-width**: Standard Nav-mønster er å wrappe sideinnhold i en max-width-container:
+
+```tsx
+import { Box, VStack } from "@navikt/ds-react";
+
+export default function Page(): JSX.Element {
+  return (
+    <main style={{ maxWidth: "1128px", margin: "0 auto" }}>
+      <Box
+        paddingBlock={{ xs: "space-16", md: "space-24" }}
+        paddingInline={{ xs: "space-16", md: "space-32" }}
+      >
+        <VStack gap={{ xs: "space-16", md: "space-24" }}>
+          {/* Sideinnhold */}
+        </VStack>
+      </Box>
+    </main>
+  );
+}
+```
+
+## Stablede systemmeldinger
+
+Vis flere `Alert`-er over hverandre når systemet har flere aktive meldinger — bruk `VStack` for konsistent rytme.
+
+```tsx
+import { Alert, VStack } from "@navikt/ds-react";
+
+type Message = { id: string; severity: "info" | "warning" | "error"; text: string };
+
+export function SystemMessages({ messages }: { messages: Message[] }): JSX.Element {
+  return (
+    <VStack gap="space-8">
+      {messages.map(({ id, severity, text }) => (
+        <Alert key={id} variant={severity}>
+          {text}
+        </Alert>
+      ))}
+    </VStack>
+  );
+}
+```
+
+## Skip-link for tastaturnavigasjon
+
+Gi tastaturbrukere en måte å hoppe over repeterende navigasjon. Skip-linken skal være synlig ved fokus, ellers skjult.
+
+```tsx
+import { Link } from "@navikt/ds-react";
+
+export function SkipLink(): JSX.Element {
+  return (
+    <Link href="#main-content" className="skip-link">
+      Hopp til hovedinnhold
+    </Link>
+  );
+}
+
+// I layout/page:
+// <SkipLink />
+// <nav>…</nav>
+// <main id="main-content">…</main>
+```
+
+CSS-mønster for skip-link som kun vises ved fokus:
+
+```css
+.skip-link {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-start: 0;
+  transform: translateY(-100%);
+  padding: var(--a-space-8) var(--a-space-16);
+  background: var(--ax-bg-default);
+  color: var(--ax-text-neutral);
+}
+
+.skip-link:focus {
+  transform: translateY(0);
+}
+```
+
+## Fokushåndtering ved feil
+
+Flytt fokus til første feilfelt eller til `ErrorSummary` ved validering. Brukeren skal ikke måtte lete.
+
+```tsx
+import { ErrorSummary, TextField, VStack } from "@navikt/ds-react";
+import { useEffect, useRef } from "react";
+
+export function FormWithFocus({ errors }: { errors: Record<string, string> }): JSX.Element {
+  const summaryRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (Object.keys(errors).length > 0) {
+      summaryRef.current?.focus();
+    }
+  }, [errors]);
+
+  return (
+    <VStack gap="space-16">
+      {Object.keys(errors).length > 0 && (
+        <ErrorSummary ref={summaryRef} heading="Fix these fields:" tabIndex={-1}>
+          {Object.entries(errors).map(([field, message]) => (
+            <ErrorSummary.Item key={field} href={`#${field}`}>{message}</ErrorSummary.Item>
+          ))}
+        </ErrorSummary>
+      )}
+      <TextField id="name" label="Name" error={errors.name} />
+      <TextField id="email" label="Email" error={errors.email} />
+    </VStack>
+  );
+}
+```
+
 ## Valg mellom mønstrene
 
 - Side eller seksjon → `Sidecontainer`
