@@ -6,7 +6,7 @@ description: PostgreSQL-gjennomgang for Nav — HikariCP for Nais-containere, in
 
 Gjennomgang av PostgreSQL-bruk i Nav-applikasjoner. Dekker Nav-spesifikk tilkoblingspool-dimensjonering (Nais + Cloud SQL), indekser, anti-mønstre, migrasjoner og koordinering av delte schemas.
 
-Se [references/sql-patterns.md](references/sql-patterns.md) for alle kodeeksempler.
+Se [references/sql-patterns.md](references/sql-patterns.md) for Nav-spesifikk HikariCP- og Cloud-SQL-oppsett. Generisk SQL-tuning (indekser, JSONB, window functions, upsert, partisjonering, N+1) er utenfor scope — bruk LLM-en eller PostgreSQL-dokumentasjonen.
 
 ## Database-valgtre i Nav-kontekst
 
@@ -50,7 +50,7 @@ Cloud SQL har `max_connections = 100` som default. Med `replicas.max = 4` og `ma
 
 > **⚠️ Spør først** før du øker `maximumPoolSize` over 5 — det er nesten alltid et symptom på langsomme spørringer eller manglende indekser, ikke pool-mangel.
 
-Se [references/sql-patterns.md](references/sql-patterns.md) for fullstendig HikariCP-oppsett med Spring Boot og Ktor.
+Se [references/sql-patterns.md](references/sql-patterns.md) for fullstendig HikariCP- og `gcp.sqlInstances`-oppsett.
 
 ## Delt database — koordinering av migrasjoner
 
@@ -74,60 +74,18 @@ Bruk **trestegs feltmigrasjon** (expand-migrate-contract) for delte schemas:
 
 Se [references/migration-flyway.md](references/migration-flyway.md) for Flyway-mønstre.
 
-## Indeksstrategier
+## Generisk SQL-tuning
 
-Opprett indekser på kolonner brukt i WHERE, JOIN og ORDER BY. Bruk partial indexes for vanlige filtre, covering indexes for å unngå table lookup, og GIN-indekser for JSONB. Unngå indekser på kolonner med lav kardinalitet.
+Indeksstrategier, JSONB-mønstre, upsert/ON CONFLICT, CHECK/UNIQUE-constraints, advisory locks, partisjonering og anti-mønstre (N+1, SELECT *, manglende LIMIT) er generisk PostgreSQL-kunnskap — LLM-en kan dette. Bruk de standard Nav-prinsippene:
 
-Se [references/sql-patterns.md](references/sql-patterns.md) for indekseksempler.
+- Indekser på FK-kolonner og hyppige WHERE-kolonner
+- `@>` + GIN-indeks for JSONB-containment, `->>` for nøkkeloppslag
+- `ON CONFLICT` kun mot faktisk `UNIQUE`-constraint
+- Batch-henting (`findByIdIn`) i stedet for N+1
+- LIMIT på spørringer som kan returnere mange rader
+- `CREATE INDEX CONCURRENTLY` i egen migrering utenfor transaksjon — se `flyway-migration`-skillen
 
-## CONCURRENTLY-indekser i produksjon
-
-For `CREATE INDEX CONCURRENTLY` i produksjon, se `flyway-migration`-skillen. Kort oppsummert: bruk egen migrering utenfor transaksjon for å unngå å blokkere skriving.
-
-Se [references/migration-flyway.md](references/migration-flyway.md) for CONCURRENTLY-eksempler.
-
-## JSONB-mønstre
-
-Bruk `@>` containment-operator med GIN-indeks for JSONB-spørringer. Bruk `->>`-operator for spesifikke nøkkeloppslag. Unngå funksjonsbaserte spørringer uten dedikert indeks.
-
-Se [references/sql-patterns.md](references/sql-patterns.md) for JSONB-eksempler.
-
-## Upsert / ON CONFLICT
-
-Bruk `ON CONFLICT` når domenet tåler deterministisk deduplisering. Kontroller at konfliktmålet samsvarer med en faktisk `UNIQUE`-constraint eller unik indeks. Bruk batch inserts der mulig.
-
-Se [references/sql-patterns.md](references/sql-patterns.md) for upsert-eksempler.
-
-## CHECK og UNIQUE constraints
-
-Legg domeneregler i databasen når de alltid må gjelde. Constraints beskytter både applikasjonskode, batch-jobber og manuelle scripts.
-
-Se [references/sql-patterns.md](references/sql-patterns.md) for constraint-eksempler.
-
-## Advisory locks
-
-Bruk advisory locks for koordinerte jobber, singleton-prosesser eller idempotente batcher. De erstatter ikke vanlige radlåser eller gode transaksjonsgrenser.
-
-Se [references/sql-patterns.md](references/sql-patterns.md) for advisory lock-eksempler.
-
-## Partisjonering
-
-Bruk `RANGE` for tidsbaserte tabeller og `LIST` når data naturlig deles på for eksempel tenant eller type. Hold omtalen kort i gjennomgangen, og spør først før du introduserer partisjonering i et eksisterende skjema.
-
-Se [references/sql-patterns.md](references/sql-patterns.md) for partisjoneringseksempler.
-
-## Anti-mønstre
-
-### N+1-spørringer
-Unngå N+1 ved å bruke batch-henting (`findBySakIdIn`) i stedet for én spørring per rad.
-
-### SELECT *
-Hent kun kolonnene du trenger — unngå `SELECT *` i produksjonskode.
-
-### Manglende LIMIT
-Begrens resultatsett med `LIMIT` på spørringer som kan returnere mange rader.
-
-Se [references/sql-patterns.md](references/sql-patterns.md) for anti-mønster-eksempler.
+Partisjonering og advisory locks: **⚠️ Spør først** før du introduserer i eksisterende løsning.
 
 ## Migrasjoner
 
@@ -185,5 +143,5 @@ Se [references/migration-flyway.md](references/migration-flyway.md) for migrasjo
 
 | Fil | Innhold |
 |-----|---------|
-| [references/sql-patterns.md](references/sql-patterns.md) | SQL-eksempler: indekser, JSONB, upsert, advisory locks, partisjonering, anti-mønstre, HikariCP |
+| [references/sql-patterns.md](references/sql-patterns.md) | Nav-spesifikk HikariCP-tuning og `gcp.sqlInstances`-oppsett |
 | [references/migration-flyway.md](references/migration-flyway.md) | Migrasjonsmønstre: TIMESTAMPTZ, FK-indekser, UUID, CONCURRENTLY, repeterbare migreringer, trestegs feltmigrasjon |
