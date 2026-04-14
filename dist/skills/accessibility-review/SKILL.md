@@ -1,10 +1,10 @@
 ---
 name: accessibility-review
-description: Tilgjengelighet-review for Nav-løsninger — WCAG 2.2, UU (universell utforming), uutilsynet, Aksel og manuell + automatisk testing før PR
+description: Tilgjengelighet-review for Nav-løsninger — WCAG 2.1/2.2 AA, UU (universell utforming), uutilsynet, Aksel og manuell + automatisk testing før PR
 ---
 # Tilgjengelighet-review
 
-Review-prosess for universell utforming (UU) i Nav-flater. Universell utforming av ikt er lovpålagt for offentlig sektor gjennom **Likestillings- og diskrimineringsloven §17** og **Forskrift om universell utforming av ikt-løsninger**, med **WCAG 2.2 AA** som minstekrav. **Tilsynet for universell utforming av ikt** (uutilsynet.no) kan revidere løsningene våre og gi pålegg.
+Review-prosess for universell utforming (UU) i Nav-flater. Universell utforming av ikt er lovpålagt for offentlig sektor gjennom **Likestillings- og diskrimineringsloven §17** og **Forskrift om universell utforming av ikt-løsninger**, med **WCAG 2.1 nivå A og AA** som forskriftskravet per i dag. **WCAG 2.2 AA** er fremoverlent praksis der relevant (nye suksesskriterier som 2.4.11 Focus Not Obscured er enkle å etterleve med Aksel). Verifiser alltid gjeldende krav mot **Tilsynet for universell utforming av ikt** (uutilsynet.no), som kan revidere løsningene våre og gi pålegg.
 
 ## Avgrensning mot `accessibility.instructions.md`
 
