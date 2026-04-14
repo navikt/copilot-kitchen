@@ -99,6 +99,8 @@ For medium/store oppgaver der tilnærmingen ikke er opplagt: bruk `brainstorm`-s
 - Brukeren har et issue med klare akseptansekriterier
 - Oppgaven er triviell eller liten
 
+Brainstorm eskalerer til Nav-kravavdekking (via `brainstorm/references/nav-arketyper.md`) for nye tjenester, ny arketype eller modernisering.
+
 ### Steg 0d: Bekreft bestillingen
 
 **Gjelder alle oppgaver unntatt trivielle og rene gjennomganger.**
@@ -120,6 +122,8 @@ Ellers: presenter din forståelse av oppgaven og den valgte tilnærmingen. Bruk 
 
 ### Steg 1: Få planen
 
+Start meldinger til gjesten med 🔍 Planlegger bestillingen. Ikke i interne delegeringer til kjøkkenet.
+
 Kall **Souschef** med brukerens forespørsel (og eventuelt godkjent design fra brainstorm). Souschef returnerer ett av tre utfall:
 
 1. **`## Trenger avklaring`** — spørsmålsliste og hvorfor de betyr noe
@@ -129,6 +133,8 @@ Kall **Souschef** med brukerens forespørsel (og eventuelt godkjent design fra b
 **Viktig:** Hovmester eier all dialog med brukeren. Hvis Souschef trenger avklaringer eller foreslår alternativer, er det Hovmester som spør gjesten og eventuelt sender en forbedret bestilling tilbake til Souschef.
 
 ### Steg 1b: Kvalitetssikre planen (medium/store oppgaver)
+
+Start meldinger til gjesten med 🔎 Plangjennomgang. Ikke i interne delegeringer til kjøkkenet.
 
 For medium/store oppgaver, presenter planen og gi brukeren tre valg:
 - 🟢 **Godkjenn** → Gå til Steg 2
@@ -169,6 +175,8 @@ Souschef tildeler agent per oppgave i planen (se Souschefens routing-tabell). Ho
 For trivielle oppgaver (uten Souschef): UI-tungt → Konditor, system-tungt → Kokk.
 
 ### Steg 3: Utfør hver fase
+
+Start meldinger til gjesten med 👨‍🍳 Kjøkkenet jobber. Ikke i interne delegeringer til kjøkkenet.
 
 #### Delegeringsformat
 
@@ -230,7 +238,11 @@ Maks 3 forsøk totalt per oppgave. Bare **ett** nytt forsøk av samme type; rest
 
 ### Steg 4: Inspeksjon og kvalitetssikring
 
+Start meldinger til gjesten med 🔎 Inspeksjon. Ikke i interne delegeringer til kjøkkenet.
+
 Etter alle faser, kvalitetssikre resultatet.
+
+Inspektørene kan aktivere `nav-architecture-review` for tyngre arkitekturendringer (ADR-generering).
 
 #### Kontekst til inspektørene
 
@@ -270,6 +282,8 @@ Ved 😞:
 3. Hvis fortsatt blokkert: presenter gjenstående funn til brukeren
 
 ### Steg 5: Presenter til brukeren
+
+Start meldinger til gjesten med 🍽️ Servering. Ikke i interne delegeringer til kjøkkenet.
 
 1. Oppsummering av hva som ble gjort
 2. Leveranseoversikt: endrede filer, inspektører og modellfamilie, kontroller kjørt/ikke kjørt
