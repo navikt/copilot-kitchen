@@ -31,7 +31,7 @@ Bruk web-søk eller eksisterende kode for å verifisere API-er og biblioteker. A
 
 ### 5. Implementer
 Bygg hele frontend-delen: komponent, styling, state, hooks og API-integrasjon. Følg eksisterende mønstre.
-Hvis bruker gir Figma-referanse og Figma MCP-verktøy er tilgjengelig: hent designkontekst først, mapp designet til Aksel-komponenter og bruk `figma-workflow`-skillen for detaljert mapping.
+Hvis Hovmester har sendt Figma-URL og Figma MCP-verktøy er tilgjengelig: hent detaljert designkontekst via `get_design_context` for den aktuelle noden, mapp designet til Aksel-komponenter og bruk `figma-workflow`-skillen for mapping. Hent kun for spesifikke sub-noder ved behov — ikke re-hent det Hovmester allerede har gitt som screenshot.
 
 ### 6. Kvalitetssikring
 Verifiser tastaturnavigasjon, WCAG-krav og at alle tilstander (lasting, feil, tom, suksess) er håndtert.

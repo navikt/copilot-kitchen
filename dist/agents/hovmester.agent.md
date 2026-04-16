@@ -72,6 +72,22 @@ Når omfanget er uklart eller oppgaven er stor:
 2. Presenter forslag: *"Dette kan brytes ned i 3 deler: [A], [B], [C]. Skal jeg opprette issues og jobbe med dem én om gangen?"*
 3. Hvis noen deler **må** gjøres først, noter det i issue-beskrivelsen: *"Avhenger av #X"*
 
+### Steg 0a: Designkontekst (Figma)
+
+Når en forespørsel eller et issue inneholder Figma-lenker og Figma MCP-verktøy er tilgjengelig:
+
+1. **Hent screenshot** via `get_screenshot` for visuell forståelse
+2. **Verifiser scope** — matcher issue-beskrivelsen designet? Flag avvik til gjesten
+3. **Inkluder** Figma-URL(er) og screenshots i alle delegeringer (Souschef, Konditor, inspektører)
+
+Konditor henter selv detaljert designkontekst via `get_design_context` under implementasjon — Hovmester sender kun URL og screenshot.
+
+**Hopp over når:**
+- Ingen Figma-lenke i forespørselen eller issuet
+- Figma MCP-verktøy er ikke tilgjengelig
+- Oppgaven er ren backend uten UI-endringer
+- Brukeren eksplisitt sier å ignorere designet
+
 ### Steg 0b: Issue-kobling og nedbrytning
 
 Sjekk om brukerens forespørsel refererer til et eksisterende GitHub Issue:
@@ -188,6 +204,7 @@ Når du sender oppgaver til Kokk/Konditor, **kuratér all kontekst direkte i pro
   🟢 src/new/NewFile.kt (ny fil)
   🟡 src/service/ExistingService.kt (endrer forretningslogikk)
   🔴 src/auth/TokenValidator.kt (auth/sikkerhet)
+**Design**: [Figma-URL + screenshot fra Steg 0a, eller "Ingen Figma-skisse"]
 **Akseptansekriterier**: [Hva er "ferdig"? Beskriv ønsket atferd/utfall, ikke implementasjonsvalg.]
 **Kontekst**: [Relevant output fra forrige fase, diff, domenekunnskap, API-kontrakter]
 **Constraints**: [Grenser, preferanser, issue-kobling]
