@@ -1,0 +1,1523 @@
+<!DOCTYPE html>
+<html lang="nb">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hovmester - Fagtorsdag 16. april 2026</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css">
+
+<style>
+  :root {
+    --void: #080a09;
+    --panel: #101411;
+    --panel-2: #171d18;
+    --ink: #f4f7ef;
+    --muted: #c3ccbe;
+    --dim: #899284;
+    --line: rgba(244, 247, 239, 0.22);
+    --line-strong: rgba(244, 247, 239, 0.48);
+    --green: #7CFF6B;
+    --cyan: #39D7FF;
+    --red: #ff4f3f;
+    --amber: #ffbe55;
+    --ff-mono: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
+    --ff-sans: "IBM Plex Sans", system-ui, sans-serif;
+    --ff-condensed: "IBM Plex Sans Condensed", "Arial Narrow", sans-serif;
+  }
+
+  html,
+  body {
+    background: var(--void);
+    color: var(--ink);
+    font-family: var(--ff-sans);
+  }
+
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background:
+      linear-gradient(rgba(124, 255, 107, 0.045) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(57, 215, 255, 0.035) 1px, transparent 1px);
+    background-size: 48px 48px;
+    mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.95), rgba(0, 0, 0, 0.32));
+    z-index: 1;
+  }
+
+  body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.18;
+    z-index: 2;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='1.15' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.8 0 0 0 0 0.9 0 0 0 0 0.75 0 0 0 0.65 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+    mix-blend-mode: screen;
+  }
+
+  .reveal {
+    background: var(--void);
+    color: var(--ink);
+    font-family: var(--ff-sans);
+    font-size: 24px;
+  }
+
+  .reveal-viewport,
+  .reveal .backgrounds {
+    background: var(--void);
+  }
+
+  .reveal .slides {
+    text-align: left;
+  }
+
+  .reveal .slides > section,
+  .reveal .slides > section > section {
+    height: 100%;
+    padding: 0;
+  }
+
+  .reveal .slide-background {
+    background: transparent !important;
+  }
+
+  .reveal h1,
+  .reveal h2,
+  .reveal h3,
+  .reveal h4 {
+    color: var(--ink);
+    font-family: var(--ff-condensed);
+    font-weight: 700;
+    letter-spacing: 0;
+    line-height: 0.96;
+    margin: 0;
+    text-transform: uppercase;
+  }
+
+  .reveal p {
+    color: var(--ink);
+    font-size: 1.25rem;
+    line-height: 1.45;
+    margin: 0;
+  }
+
+  .reveal a {
+    color: var(--green);
+    text-decoration: none;
+    border-bottom: 1px solid var(--green);
+  }
+
+  .reveal code {
+    color: var(--green);
+    font-family: var(--ff-mono);
+    font-size: 0.9em;
+    padding: 0 0.08em;
+  }
+
+  .reveal pre {
+    background: #050605 !important;
+    border: 1px solid var(--line-strong);
+    border-left: 5px solid var(--green);
+    border-radius: 6px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.38) !important;
+    color: var(--ink);
+    font-family: var(--ff-mono);
+    font-size: 0.88rem;
+    line-height: 1.5;
+    margin: 0 !important;
+    overflow-x: auto;
+    padding: 1.2rem 1.35rem;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  .reveal pre code {
+    background: transparent;
+    color: var(--ink);
+    display: block;
+    padding: 0;
+  }
+
+  .reveal .controls {
+    color: var(--green);
+  }
+
+  .reveal .progress {
+    background: rgba(244, 247, 239, 0.12);
+    height: 4px;
+  }
+
+  .reveal .progress span {
+    background: linear-gradient(90deg, var(--green), var(--cyan), var(--amber));
+  }
+
+  .slide {
+    position: absolute;
+    inset: 0;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    padding: 5.4rem 6.2rem 4.6rem;
+  }
+
+  .slide::before {
+    content: "";
+    position: absolute;
+    inset: 1.15rem;
+    border: 1px solid rgba(244, 247, 239, 0.12);
+    pointer-events: none;
+  }
+
+  .slide--center {
+    justify-content: center;
+  }
+
+  .slide--split {
+    display: grid;
+    grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+    gap: 4rem;
+    align-items: center;
+  }
+
+  .slide--terminal {
+    background:
+      radial-gradient(circle at 78% 22%, rgba(124, 255, 107, 0.1), transparent 24rem),
+      linear-gradient(135deg, rgba(57, 215, 255, 0.08), transparent 42%),
+      var(--void);
+  }
+
+  .hud {
+    position: absolute;
+    top: 2.35rem;
+    left: 6.2rem;
+    right: 6.2rem;
+    z-index: 5;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 1.5rem;
+    align-items: center;
+    color: var(--muted);
+    font-family: var(--ff-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .hud::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -0.9rem;
+    height: 1px;
+    background: linear-gradient(90deg, var(--green), var(--line), var(--cyan));
+  }
+
+  .hud strong {
+    color: var(--green);
+    font-weight: 700;
+  }
+
+  .hud .center {
+    color: var(--ink);
+    text-align: center;
+  }
+
+  .hud .right {
+    color: var(--dim);
+    text-align: right;
+  }
+
+  .rail {
+    position: absolute;
+    bottom: 2.25rem;
+    left: 6.2rem;
+    right: 6.2rem;
+    z-index: 5;
+    display: flex;
+    gap: 0.55rem;
+    align-items: center;
+    color: var(--dim);
+    font-family: var(--ff-mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .rail span {
+    border: 1px solid rgba(244, 247, 239, 0.18);
+    border-radius: 4px;
+    padding: 0.32rem 0.54rem;
+  }
+
+  .rail .on {
+    border-color: var(--green);
+    color: var(--green);
+    box-shadow: 0 0 18px rgba(124, 255, 107, 0.16);
+  }
+
+  .kicker {
+    color: var(--green);
+    display: block;
+    font-family: var(--ff-mono);
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+  }
+
+  .title {
+    font-size: 6.4rem;
+    max-width: 12ch;
+  }
+
+  .title .accent,
+  .slide-title .accent,
+  .big .accent {
+    color: var(--green);
+  }
+
+  .title .cyan,
+  .slide-title .cyan,
+  .big .cyan {
+    color: var(--cyan);
+  }
+
+  .slide-title {
+    font-size: 3.35rem;
+    max-width: 20ch;
+    margin-bottom: 2.1rem !important;
+  }
+
+  .big {
+    font-size: 4.9rem;
+    max-width: 16ch;
+  }
+
+  .lede {
+    color: var(--muted) !important;
+    font-size: 1.55rem !important;
+    line-height: 1.36 !important;
+    max-width: 34ch;
+  }
+
+  .body {
+    color: var(--ink) !important;
+    font-size: 1.26rem !important;
+    line-height: 1.52 !important;
+    max-width: 46ch;
+  }
+
+  .muted {
+    color: var(--muted) !important;
+  }
+
+  .signal {
+    align-items: stretch;
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    margin-top: 2.4rem;
+  }
+
+  .signal-card {
+    background: linear-gradient(180deg, rgba(244, 247, 239, 0.06), rgba(244, 247, 239, 0.025));
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    min-height: 12rem;
+    padding: 1.2rem;
+    position: relative;
+  }
+
+  .signal-card::before {
+    content: attr(data-id);
+    color: var(--cyan);
+    display: block;
+    font-family: var(--ff-mono);
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    margin-bottom: 1.2rem;
+  }
+
+  .signal-card h3 {
+    color: var(--ink);
+    font-size: 1.65rem;
+    line-height: 1.03;
+    margin-bottom: 1rem;
+  }
+
+  .signal-card p {
+    color: var(--muted);
+    font-size: 1rem;
+    line-height: 1.43;
+  }
+
+  .danger {
+    border-color: rgba(255, 79, 63, 0.7);
+    box-shadow: 0 0 34px rgba(255, 79, 63, 0.08);
+  }
+
+  .danger::before {
+    color: var(--red);
+  }
+
+  .ok {
+    border-color: rgba(124, 255, 107, 0.72);
+    box-shadow: 0 0 34px rgba(124, 255, 107, 0.1);
+  }
+
+  .matrix {
+    border-collapse: collapse;
+    width: 100%;
+  }
+
+  .matrix th {
+    border-bottom: 1px solid var(--line-strong);
+    color: var(--dim);
+    font-family: var(--ff-mono);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    padding: 0.8rem 0.9rem;
+    text-align: left;
+    text-transform: uppercase;
+  }
+
+  .matrix td {
+    border-bottom: 1px solid var(--line);
+    color: var(--ink);
+    font-size: 1.06rem;
+    line-height: 1.35;
+    padding: 1rem 0.9rem;
+    vertical-align: top;
+  }
+
+  .matrix tr:last-child td {
+    border-bottom: 0;
+  }
+
+  .matrix .mono {
+    color: var(--green);
+    font-family: var(--ff-mono);
+    font-size: 0.95rem;
+    white-space: nowrap;
+  }
+
+  .tag {
+    border: 1px solid var(--line-strong);
+    border-radius: 4px;
+    color: var(--ink);
+    display: inline-block;
+    font-family: var(--ff-mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+    margin: 0.22rem 0.3rem 0.22rem 0;
+    padding: 0.32rem 0.5rem;
+    text-transform: uppercase;
+  }
+
+  .tag.green {
+    border-color: var(--green);
+    color: var(--green);
+  }
+
+  .tag.cyan {
+    border-color: var(--cyan);
+    color: var(--cyan);
+  }
+
+  .tag.amber {
+    border-color: var(--amber);
+    color: var(--amber);
+  }
+
+  .diagram {
+    width: 100%;
+  }
+
+  .terminal {
+    background: #050605;
+    border: 1px solid var(--line-strong);
+    border-radius: 6px;
+    box-shadow: 0 28px 80px rgba(0, 0, 0, 0.44);
+    color: var(--ink);
+    font-family: var(--ff-mono);
+    font-size: 1rem;
+    line-height: 1.55;
+    overflow: hidden;
+  }
+
+  .terminal .bar {
+    align-items: center;
+    border-bottom: 1px solid var(--line);
+    display: flex;
+    gap: 0.45rem;
+    padding: 0.72rem 0.9rem;
+  }
+
+  .terminal .dot {
+    background: var(--dim);
+    border-radius: 50%;
+    display: block;
+    height: 0.62rem;
+    width: 0.62rem;
+  }
+
+  .terminal .dot:nth-child(1) { background: var(--red); }
+  .terminal .dot:nth-child(2) { background: var(--amber); }
+  .terminal .dot:nth-child(3) { background: var(--green); }
+
+  .terminal .content {
+    padding: 1.05rem 1.15rem 1.2rem;
+    white-space: pre-wrap;
+  }
+
+  .prompt {
+    color: var(--green);
+  }
+
+  .comment {
+    color: var(--dim);
+  }
+
+  .warn {
+    color: var(--amber);
+  }
+
+  .bad {
+    color: var(--red);
+  }
+
+  .layer-split {
+    display: grid;
+    gap: 2.6rem;
+    grid-template-columns: minmax(0, 1fr) 2px minmax(0, 1fr);
+    margin-top: 2.25rem;
+    max-width: 94rem;
+  }
+
+  .layer-column {
+    background: rgba(244, 247, 239, 0.04);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    min-height: 24rem;
+    padding: 1.45rem;
+    position: relative;
+  }
+
+  .layer-column.knowledge {
+    border-color: rgba(57, 215, 255, 0.54);
+  }
+
+  .layer-column.workflow {
+    border-color: rgba(124, 255, 107, 0.54);
+  }
+
+  .layer-divider {
+    background: linear-gradient(180deg, rgba(57, 215, 255, 0), rgba(57, 215, 255, 0.9), rgba(124, 255, 107, 0.9), rgba(124, 255, 107, 0));
+    min-height: 24rem;
+  }
+
+  .layer-column::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(135deg, rgba(244, 247, 239, 0.07), rgba(244, 247, 239, 0));
+    border-radius: inherit;
+  }
+
+  .layer-label {
+    color: var(--cyan);
+    display: block;
+    font-family: var(--ff-mono);
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+  }
+
+  .workflow .layer-label {
+    color: var(--green);
+  }
+
+  .layer-column h3 {
+    color: var(--ink);
+    font-size: 2.55rem;
+    line-height: 1.05;
+    margin-bottom: 1.35rem;
+  }
+
+  .layer-items {
+    display: grid;
+    gap: 0.85rem;
+  }
+
+  .layer-item {
+    border-top: 1px solid var(--line);
+    padding-top: 0.95rem;
+  }
+
+  .layer-item strong {
+    color: var(--ink);
+    display: block;
+    font-size: 1.55rem;
+    line-height: 1.05;
+    margin-bottom: 0.25rem;
+    text-transform: uppercase;
+  }
+
+  .layer-item span {
+    color: var(--muted);
+    font-family: var(--ff-mono);
+    font-size: 1rem;
+    line-height: 1.35;
+  }
+
+  .layer-bottom {
+    color: var(--green);
+    font-family: var(--ff-mono);
+    font-size: 1.05rem;
+    margin-top: 1.45rem;
+  }
+
+  .split-list {
+    display: grid;
+    gap: 1.1rem;
+    margin-top: 1.5rem;
+    max-width: 48rem;
+  }
+
+  .split-list p {
+    border-left: 4px solid var(--green);
+    color: var(--ink);
+    font-size: 1.35rem;
+    line-height: 1.35;
+    padding-left: 1rem;
+  }
+
+  .split-list p:nth-child(2) {
+    border-left-color: var(--cyan);
+  }
+
+  .split-list p:nth-child(3) {
+    border-left-color: var(--amber);
+  }
+
+  .takeaways {
+    display: grid;
+    gap: 0.9rem;
+    margin-top: 2rem;
+    max-width: 88rem;
+  }
+
+  .takeaway {
+    align-items: center;
+    background: rgba(244, 247, 239, 0.04);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    display: grid;
+    gap: 1.35rem;
+    grid-template-columns: 5.5rem minmax(18rem, 0.7fr) minmax(0, 1fr);
+    min-height: 7.2rem;
+    padding: 1.05rem 1.25rem;
+  }
+
+  .takeaway .num {
+    color: var(--green);
+    font-family: var(--ff-mono);
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+  }
+
+  .takeaway h3 {
+    color: var(--ink);
+    font-size: 2.1rem;
+    line-height: 1.02;
+  }
+
+  .takeaway p {
+    color: var(--muted);
+    font-size: 1.25rem;
+    line-height: 1.35;
+  }
+
+  .takeaway:nth-child(2) .num {
+    color: var(--cyan);
+  }
+
+  .takeaway:nth-child(3) .num {
+    color: var(--amber);
+  }
+
+  .repo-link {
+    color: var(--green) !important;
+    display: block;
+    font-family: var(--ff-mono);
+    font-size: 2.1rem !important;
+    margin-top: 1.5rem !important;
+    max-width: none;
+  }
+
+  .capability-map {
+    display: grid;
+    gap: 0.75rem;
+    margin-top: 1.8rem;
+    max-width: 94rem;
+  }
+
+  .capability-band {
+    align-items: center;
+    background: linear-gradient(90deg, rgba(124, 255, 107, 0.18), rgba(57, 215, 255, 0.08));
+    border: 1px solid var(--line-strong);
+    border-radius: 6px;
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: 17rem minmax(0, 1fr) minmax(28rem, auto);
+    min-height: 5.15rem;
+    padding: 0.85rem 1.05rem;
+    position: relative;
+  }
+
+  .capability-band.narrow {
+    margin-left: 10rem;
+    max-width: 62rem;
+  }
+
+  .capability-band.tip {
+    margin-left: 27rem;
+    max-width: 28rem;
+    border-color: var(--green);
+    box-shadow: 0 0 32px rgba(124, 255, 107, 0.12);
+  }
+
+  .capability-band h3 {
+    color: var(--ink);
+    font-size: 1.65rem;
+    margin-bottom: 0;
+  }
+
+  .capability-band .scope {
+    color: var(--muted);
+    font-family: var(--ff-mono);
+    font-size: 0.88rem;
+    letter-spacing: 0.04em;
+  }
+
+  .surface-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.55rem;
+    justify-content: flex-end;
+    margin-top: 0;
+  }
+
+  .surface-row .surface {
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    color: var(--dim);
+    font-family: var(--ff-mono);
+    font-size: 0.88rem;
+    letter-spacing: 0.08em;
+    padding: 0.38rem 0.62rem;
+    text-transform: uppercase;
+  }
+
+  .surface-row .surface.on {
+    border-color: var(--green);
+    color: var(--green);
+  }
+
+  .repo-plate {
+    background: linear-gradient(135deg, rgba(124, 255, 107, 0.12), rgba(57, 215, 255, 0.04));
+    border: 1px solid var(--line-strong);
+    border-radius: 6px;
+    padding: 2rem;
+    min-height: 27rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  .repo-wordmark {
+    color: var(--green);
+    font-family: var(--ff-condensed);
+    font-size: 5.2rem;
+    font-weight: 700;
+    letter-spacing: 0;
+    line-height: 0.9;
+    text-transform: uppercase;
+  }
+
+  .repo-wordmark span {
+    color: var(--ink);
+    display: block;
+  }
+
+  .issue-layout {
+    align-items: center;
+    display: grid;
+    gap: 3rem;
+    grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+    height: 100%;
+  }
+
+  .issue-card {
+    background: linear-gradient(180deg, rgba(244, 247, 239, 0.06), rgba(244, 247, 239, 0.025));
+    border: 1px solid var(--line-strong);
+    border-radius: 6px;
+    margin-top: 1.6rem;
+    padding: 1.2rem;
+  }
+
+  .issue-card .field {
+    border-bottom: 1px solid var(--line);
+    padding: 0.85rem 0;
+  }
+
+  .issue-card .field:first-child {
+    padding-top: 0;
+  }
+
+  .issue-card .field:last-child {
+    border-bottom: 0;
+    padding-bottom: 0;
+  }
+
+  .issue-card .label {
+    color: var(--green);
+    display: block;
+    font-family: var(--ff-mono);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    margin-bottom: 0.35rem;
+    text-transform: uppercase;
+  }
+
+  .issue-card .value {
+    color: var(--ink);
+    font-family: var(--ff-condensed);
+    font-size: 1.55rem;
+    font-weight: 700;
+    line-height: 1.05;
+    text-transform: uppercase;
+  }
+
+  .issue-tree {
+    background: #050605;
+    border: 1px solid rgba(124, 255, 107, 0.58);
+    border-radius: 6px;
+    box-shadow: 0 0 36px rgba(124, 255, 107, 0.08);
+    font-family: var(--ff-mono);
+    font-size: 1.05rem;
+    line-height: 1.65;
+    padding: 1.35rem 1.5rem;
+    white-space: pre;
+  }
+
+  .issue-tree .green {
+    color: var(--green);
+  }
+
+  .issue-tree .cyan {
+    color: var(--cyan);
+  }
+
+  .retro-quote {
+    border-left: 4px solid var(--cyan);
+    color: var(--ink);
+    font-size: 1.35rem;
+    line-height: 1.35;
+    margin-top: 1.5rem;
+    padding-left: 1rem;
+  }
+
+  .retro-quote span {
+    color: var(--muted);
+    display: block;
+    font-family: var(--ff-mono);
+    font-size: 0.8rem;
+    letter-spacing: 0.1em;
+    margin-top: 0.8rem;
+    text-transform: uppercase;
+  }
+
+  .context-meter {
+    border: 1px solid var(--line-strong);
+    border-radius: 6px;
+    margin-top: 2.6rem;
+    max-width: 70rem;
+    overflow: hidden;
+  }
+
+  .context-meter .bar {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    height: 4.4rem;
+  }
+
+  .context-meter .smart,
+  .context-meter .dumb {
+    align-items: center;
+    display: flex;
+    font-family: var(--ff-mono);
+    font-size: 0.82rem;
+    font-weight: 700;
+    justify-content: space-between;
+    letter-spacing: 0.12em;
+    padding: 0 1.1rem;
+    text-transform: uppercase;
+  }
+
+  .context-meter .smart {
+    background: linear-gradient(90deg, rgba(124, 255, 107, 0.45), rgba(124, 255, 107, 0.16));
+    color: var(--green);
+  }
+
+  .context-meter .dumb {
+    background: linear-gradient(90deg, rgba(255, 190, 85, 0.22), rgba(255, 79, 63, 0.45));
+    color: var(--red);
+  }
+
+  .context-meter .labels {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    border-top: 1px solid var(--line);
+  }
+
+  .context-meter .labels span {
+    color: var(--muted);
+    font-family: var(--ff-mono);
+    font-size: 0.82rem;
+    line-height: 1.4;
+    padding: 0.85rem 1.1rem;
+  }
+
+  @media (max-width: 900px) {
+    .slide {
+      padding: 4rem 2rem 3.5rem;
+    }
+
+    .hud,
+    .rail {
+      left: 2rem;
+      right: 2rem;
+    }
+  }
+</style>
+</head>
+
+<body>
+<div class="reveal">
+<div class="slides">
+
+<section data-background-color="#080a09">
+  <div class="slide slide--terminal">
+    <div class="hud">
+      <span><strong>00</strong> / Hovmester</span>
+      <span class="center">Fagtorsdag 16.04.2026</span>
+      <span class="right">github.com/navikt/hovmester</span>
+    </div>
+
+    <div style="margin-top:auto; margin-bottom:auto;">
+      <span class="kicker">Orkestrering av agenter med</span>
+      <h1 class="title">Hov<span class="accent">mester</span></h1>
+      <p class="lede" style="margin-top:1.5rem;">
+        Issues, skills og agentflyt for GitHub Copilot i Nav.
+      </p>
+    </div>
+
+    <div class="terminal" style="max-width: 58rem;">
+      <div class="bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
+      <div class="content"><span class="prompt">$</span> copilot --agent hovmester --prompt "Løs issue #123"
+<span class="comment"># GitHub issue -> plan -> subagenter -> review -> PR</span></div>
+    </div>
+  </div>
+  <aside class="notes">
+    30 sek. Start live-run i terminal før du går videre. Si at den får jobbe mens vi bygger rammen.
+  </aside>
+</section>
+
+<section>
+  <div class="slide slide--center">
+    <div class="hud">
+      <span><strong>01</strong> / Premiss</span>
+      <span class="center">context window er arbeidsminnet</span>
+      <span class="right">01 / 14</span>
+    </div>
+    <h2 class="big">Agenter har begrenset <span class="accent">arbeidsminne</span>.</h2>
+    <p class="lede" style="margin-top:1.5rem;">
+      Når historikk, utforskning og irrelevante regler fyller vinduet, får agenten mindre plass til å forstå, planlegge og endre riktig kode.
+    </p>
+    <div class="context-meter">
+      <div class="bar">
+        <div class="smart"><span>smart zone</span><span>oppgave + relevant kontekst</span></div>
+        <div class="dumb"><span>dumb zone</span><span>støy + gammel historikk</span></div>
+      </div>
+      <div class="labels">
+        <span>ferskt vindu · tydelige rammer · riktige skills</span>
+        <span>lang chat · irrelevante regler · lite arbeidsrom</span>
+      </div>
+    </div>
+    <div class="rail"><span class="on">context</span><span>instructions</span><span>skills</span><span>orchestrator</span><span>demo</span></div>
+  </div>
+  <aside class="notes">
+    60 sek. Land hovedpåstanden tidlig: kvaliteten styres mer av kontekstøkonomi enn av hvor lang prompten er.
+    Koble til demoen du nettopp startet: det viktigste er ikke magisk prompt, men hvor ryddig og relevant konteksten er.
+  </aside>
+</section>
+
+<section>
+  <div class="slide">
+    <div class="hud">
+      <span><strong>02</strong> / Agenten trenger</span>
+      <span class="center">minimum viable agent environment</span>
+      <span class="right">02 / 14</span>
+    </div>
+    <h2 class="slide-title">Grunnmur for godt <span class="accent">agentarbeid</span></h2>
+    <div class="signal">
+      <div class="signal-card" data-id="01 / LEDIG VINDU">
+        <h3>Godt tilgjengelig context window</h3>
+        <p>Ikke fyll samtalen med alt repoet vet. La agenten bruke plassen på oppgaven.</p>
+      </div>
+      <div class="signal-card" data-id="02 / PATH SCOPE">
+        <h3>Path-scoped instructions</h3>
+        <p>Kotlin-regler lastes når du rører Kotlin. Frontend-regler når du rører frontend.</p>
+      </div>
+      <div class="signal-card" data-id="03 / SKILLS">
+        <h3>Skills med progressive disclosure</h3>
+        <p>Collections gir repoet riktige skills. Agenten finner dem automatisk og laster detaljer først når oppgaven passer.</p>
+      </div>
+    </div>
+    <div class="rail"><span class="on">context</span><span class="on">instructions</span><span class="on">skills</span><span>orchestrator</span><span>demo</span></div>
+  </div>
+  <aside class="notes">
+    2 min. Dette er broen fra GitHub best practices til hovmester. Her kan du si: ofte er dette nok.
+  </aside>
+</section>
+
+<section>
+  <div class="slide">
+    <div class="hud">
+      <span><strong>03</strong> / Arbeidsobjekter</span>
+      <span class="center">issues + templates + PR</span>
+      <span class="right">03 / 14</span>
+    </div>
+
+    <div class="issue-layout">
+      <div>
+        <h2 class="slide-title">Issues er arbeidsordre for <span class="accent">agenter</span></h2>
+        <p class="lede">
+          Hovmester hjelper ikke bare med kode. Den hjelper teamet å lage bedre oppgaver.
+        </p>
+        <div class="issue-card">
+          <div class="field">
+            <span class="label">issue-management skill</span>
+            <span class="value">kort og konkret</span>
+          </div>
+          <div class="field">
+            <span class="label">issue templates</span>
+            <span class="value">bakgrunn · akseptanse · avgrensning</span>
+          </div>
+          <div class="field">
+            <span class="label">PR template</span>
+            <span class="value">samme språk som mennesker bruker</span>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="issue-tree"><span class="green">EPIC</span>  implementer ny visning
+  <span class="cyan">├─ TASK</span> backend-kontrakt
+  <span class="cyan">├─ TASK</span> frontend fra Figma
+  <span class="cyan">└─ TASK</span> test + review
+
+hver task = fersk kontekst
+hver PR   = tydelig historie</div>
+        <p class="retro-quote">
+          "Hovmester hjelper både med oppgaver, og bedre innhold i issues og PR-beskrivelser"
+          <span>retro-feedback</span>
+        </p>
+      </div>
+    </div>
+    <div class="rail"><span>context</span><span class="on">instructions</span><span class="on">skills</span><span>orchestrator</span><span>demo</span></div>
+  </div>
+  <aside class="notes">
+    90 sek. Poenget er at Hovmester forbedrer arbeidsobjektene, ikke bare koden.
+    Issues og PR-er følger samme templates som mennesker bruker. Dette gir både
+    mennesker og agenter mindre støy og tydeligere rammer. Nevn at epic -> tasks
+    også er en måte å få fersk kontekst på store oppgaver.
+  </aside>
+</section>
+
+<section>
+  <div class="slide">
+    <div class="hud">
+      <span><strong>04</strong> / Path scoped</span>
+      <span class="center">tokens brukt der de virker</span>
+      <span class="right">04 / 14</span>
+    </div>
+    <h2 class="slide-title">Bruk instructions <span class="accent">sparsommelig</span></h2>
+    <div style="display:grid; grid-template-columns:minmax(0, 1fr) minmax(0, 1fr); gap:3rem; align-items:start;">
+      <pre><code>---
+applyTo: "**/*.kt"
+---
+
+# Kotlin-konvensjoner i Nav
+
+- Bruk kotlin-spring eller
+  kotlin-ktor skills for detaljer
+- Følg Nav-standard for
+  feilhåndtering
+- Test service-laget</code></pre>
+      <div>
+        <p class="body">
+          LLM-en kan allerede utvikling. Instructions bør beskrive lokale regler agenten ellers ville gjettet.
+        </p>
+        <div class="split-list">
+          <p>Alltid path-scope.</p>
+          <p>Korte og handlingsbare.</p>
+          <p>Utfyllende informasjon i skills.</p>
+        </div>
+      </div>
+    </div>
+    <div class="rail"><span>context</span><span class="on">instructions</span><span>skills</span><span>orchestrator</span><span>demo</span></div>
+  </div>
+  <aside class="notes">
+    90 sek. Knytt til GitHubs best practice: detaljer i custom instructions, konsist og scoped.
+  </aside>
+</section>
+
+<section>
+  <div class="slide">
+    <div class="hud">
+      <span><strong>05</strong> / Skills</span>
+      <span class="center">progressive disclosure</span>
+      <span class="right">05 / 14</span>
+    </div>
+    <h2 class="slide-title">Skills gjør kunnskap <span class="accent">oppdagbar</span></h2>
+    <svg class="diagram" viewBox="0 0 1160 430" xmlns="http://www.w3.org/2000/svg" aria-label="Progressive disclosure">
+      <defs>
+        <marker id="arrow-skill" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+          <polygon points="0 0, 8 4, 0 8" fill="#7CFF6B"/>
+        </marker>
+      </defs>
+      <rect x="30" y="40" width="1040" height="78" rx="6" fill="#101411" stroke="rgba(57,215,255,0.65)"/>
+      <text x="62" y="76" font-family="IBM Plex Mono" font-size="17" fill="#39D7FF" letter-spacing="2">1 / FRONTMATTER I KONTEKST</text>
+      <text x="62" y="103" font-family="IBM Plex Sans Condensed" font-size="33" font-weight="700" fill="#f4f7ef">name + description for 23 skills</text>
+      <text x="960" y="93" font-family="IBM Plex Mono" font-size="20" fill="#7CFF6B" text-anchor="middle">lav kost</text>
+
+      <line x1="550" y1="118" x2="550" y2="176" stroke="#7CFF6B" stroke-width="2" marker-end="url(#arrow-skill)"/>
+      <text x="575" y="153" font-family="IBM Plex Mono" font-size="16" fill="#aeb7aa">matcher oppgaven?</text>
+
+      <rect x="30" y="185" width="1040" height="78" rx="6" fill="#101411" stroke="rgba(124,255,107,0.65)"/>
+      <text x="62" y="221" font-family="IBM Plex Mono" font-size="17" fill="#7CFF6B" letter-spacing="2">2 / SKILL AKTIVERES</text>
+      <text x="62" y="248" font-family="IBM Plex Sans Condensed" font-size="33" font-weight="700" fill="#f4f7ef">hele SKILL.md lastes når oppgaven matcher</text>
+      <text x="960" y="238" font-family="IBM Plex Mono" font-size="20" fill="#7CFF6B" text-anchor="middle">når relevant</text>
+
+      <line x1="550" y1="263" x2="550" y2="321" stroke="#7CFF6B" stroke-width="2" marker-end="url(#arrow-skill)"/>
+      <text x="575" y="298" font-family="IBM Plex Mono" font-size="16" fill="#aeb7aa">trenger detaljer?</text>
+
+      <rect x="30" y="330" width="1040" height="78" rx="6" fill="#101411" stroke="rgba(255,190,85,0.62)"/>
+      <text x="62" y="366" font-family="IBM Plex Mono" font-size="17" fill="#ffbe55" letter-spacing="2">3 / PROGRESSIVE DISCLOSURE</text>
+      <text x="62" y="393" font-family="IBM Plex Sans Condensed" font-size="33" font-weight="700" fill="#f4f7ef">references/ + scripts/ + eksempler ved behov</text>
+    </svg>
+    <p class="muted" style="font-family:var(--ff-mono); font-size:0.95rem; margin-top:1.2rem;">
+      Agenten trenger ikke lese alt først. Den henter detaljer når de blir relevante.
+    </p>
+    <div class="rail"><span>context</span><span>instructions</span><span class="on">skills</span><span>orchestrator</span><span>demo</span></div>
+  </div>
+  <aside class="notes">
+    2 min. Rett tidligere formulering: navn/beskrivelse er synlig, hele skills er ikke lastet.
+  </aside>
+</section>
+
+<section>
+  <div class="slide slide--center">
+    <div class="hud">
+      <span><strong>06</strong> / Én agent</span>
+      <span class="center">før orkestrering</span>
+      <span class="right">06 / 14</span>
+    </div>
+    <h2 class="big">Når én agent er <span class="accent">nok</span>.</h2>
+    <div class="split-list">
+      <p>Én tydelig og begrenset oppgave.</p>
+      <p>Friskt context window.</p>
+      <p>Én modell kan planlegge, kode og reviewe godt nok.</p>
+    </div>
+    <p class="muted" style="font-family:var(--ff-mono); font-size:1rem; margin-top:2rem;">
+      Start enkelt. Orkestrer når oppgaven krever det.
+    </p>
+    <div class="rail"><span class="on">context</span><span class="on">instructions</span><span class="on">skills</span><span>orchestrator</span><span>demo</span></div>
+  </div>
+  <aside class="notes">
+    70 sek. Dette gjør argumentet mer troverdig. Ikke selg multi-agent som default.
+  </aside>
+</section>
+
+<section>
+  <div class="slide">
+    <div class="hud">
+      <span><strong>07</strong> / Når trenger du orkestrator?</span>
+      <span class="center">context overflow + review</span>
+      <span class="right">07 / 14</span>
+    </div>
+    <h2 class="slide-title">Orkestrering gir verdi når én agent blir <span class="accent">flaskehalsen</span></h2>
+    <div class="signal">
+      <div class="signal-card danger" data-id="TRIGGER 01">
+        <h3>Context window fylles</h3>
+        <p>Utforskning, avklaringer og historikk spiser plassen agenten trenger til implementasjon.</p>
+      </div>
+      <div class="signal-card danger" data-id="TRIGGER 02">
+        <h3>Flere roller trengs</h3>
+        <p>Plan, backend, frontend og review er ulike jobber. Samme chat er ofte feil arbeidsflate.</p>
+      </div>
+      <div class="signal-card danger" data-id="TRIGGER 03">
+        <h3>Du vil ha kryssmodell-review</h3>
+        <p>Modeller har ulike blindsoner. En annen modell kan lese koden med andre briller.</p>
+      </div>
+    </div>
+    <div class="rail"><span>context</span><span>instructions</span><span>skills</span><span class="on">orchestrator</span><span>demo</span></div>
+  </div>
+  <aside class="notes">
+    2 min. Her svarer du direkte på "når trengs orkestrator?". Bruk store oppgaver og review som primærgrunn.
+  </aside>
+</section>
+
+<section>
+  <div class="slide slide--split">
+    <div>
+      <div class="hud">
+        <span><strong>08</strong> / Hovmester</span>
+        <span class="center">arbeidsflytlaget</span>
+        <span class="right">08 / 14</span>
+      </div>
+      <h2 class="slide-title">Hovmester er <span class="accent">lead agent</span>, ikke superutvikler</h2>
+      <p class="lede">
+        Den implementerer ikke. Den vurderer scope, delegerer, holder status og konsoliderer review.
+      </p>
+    </div>
+    <svg class="diagram" viewBox="0 0 700 520" xmlns="http://www.w3.org/2000/svg" aria-label="Hovmester architecture">
+      <defs>
+        <marker id="arrow-agent" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+          <polygon points="0 0, 8 4, 0 8" fill="#7CFF6B"/>
+        </marker>
+        <marker id="arrow-review" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+          <polygon points="0 0, 8 4, 0 8" fill="#39D7FF"/>
+        </marker>
+      </defs>
+      <rect x="230" y="30" width="240" height="86" rx="6" fill="#101411" stroke="#7CFF6B" stroke-width="2"/>
+      <text x="350" y="64" font-family="IBM Plex Mono" font-size="16" fill="#7CFF6B" text-anchor="middle" letter-spacing="2">ORCHESTRATOR / OPUS</text>
+      <text x="350" y="96" font-family="IBM Plex Sans Condensed" font-size="34" font-weight="700" fill="#f4f7ef" text-anchor="middle">HOVMESTER</text>
+
+      <line x1="350" y1="116" x2="140" y2="190" stroke="#7CFF6B" stroke-width="2" marker-end="url(#arrow-agent)"/>
+      <line x1="350" y1="116" x2="350" y2="190" stroke="#7CFF6B" stroke-width="2" marker-end="url(#arrow-agent)"/>
+      <line x1="350" y1="116" x2="560" y2="190" stroke="#7CFF6B" stroke-width="2" marker-end="url(#arrow-agent)"/>
+
+      <rect x="30" y="200" width="220" height="82" rx="6" fill="#101411" stroke="rgba(244,247,239,0.28)"/>
+      <text x="140" y="232" font-family="IBM Plex Mono" font-size="15" fill="#aeb7aa" text-anchor="middle" letter-spacing="2">PLAN / OPUS</text>
+      <text x="140" y="260" font-family="IBM Plex Sans Condensed" font-size="28" font-weight="700" fill="#f4f7ef" text-anchor="middle">SOUSCHEF</text>
+
+      <rect x="240" y="200" width="220" height="82" rx="6" fill="#101411" stroke="rgba(244,247,239,0.28)"/>
+      <text x="350" y="232" font-family="IBM Plex Mono" font-size="15" fill="#aeb7aa" text-anchor="middle" letter-spacing="2">BACKEND / GPT</text>
+      <text x="350" y="260" font-family="IBM Plex Sans Condensed" font-size="28" font-weight="700" fill="#f4f7ef" text-anchor="middle">KOKK</text>
+
+      <rect x="450" y="200" width="220" height="82" rx="6" fill="#101411" stroke="rgba(244,247,239,0.28)"/>
+      <text x="560" y="232" font-family="IBM Plex Mono" font-size="15" fill="#aeb7aa" text-anchor="middle" letter-spacing="2">FRONTEND / OPUS</text>
+      <text x="560" y="260" font-family="IBM Plex Sans Condensed" font-size="28" font-weight="700" fill="#f4f7ef" text-anchor="middle">KONDITOR</text>
+
+      <rect x="110" y="378" width="230" height="72" rx="6" fill="#101411" stroke="#39D7FF" stroke-width="2"/>
+      <text x="225" y="405" font-family="IBM Plex Mono" font-size="15" fill="#39D7FF" text-anchor="middle" letter-spacing="2">OPUS</text>
+      <text x="225" y="434" font-family="IBM Plex Sans Condensed" font-size="24" font-weight="700" fill="#f4f7ef" text-anchor="middle">INSPEKTØR-CLAUDE</text>
+
+      <rect x="360" y="378" width="230" height="72" rx="6" fill="#101411" stroke="#39D7FF" stroke-width="2"/>
+      <text x="475" y="405" font-family="IBM Plex Mono" font-size="15" fill="#39D7FF" text-anchor="middle" letter-spacing="2">GPT</text>
+      <text x="475" y="434" font-family="IBM Plex Sans Condensed" font-size="24" font-weight="700" fill="#f4f7ef" text-anchor="middle">INSPEKTØR-GPT</text>
+
+      <rect x="220" y="327" width="260" height="28" rx="4" fill="#080a09" stroke="rgba(57,215,255,0.25)"/>
+      <text x="350" y="347" font-family="IBM Plex Mono" font-size="14" fill="#39D7FF" letter-spacing="2" text-anchor="middle">CROSS-MODEL REVIEW</text>
+      <path d="M350 282 C350 330 238 330 225 378" stroke="#39D7FF" stroke-width="2" stroke-dasharray="6 7" fill="none" marker-end="url(#arrow-review)"/>
+      <path d="M560 282 C560 330 492 330 475 378" stroke="#39D7FF" stroke-width="2" stroke-dasharray="6 7" fill="none" marker-end="url(#arrow-review)"/>
+
+    </svg>
+    <div class="rail"><span>context</span><span>instructions</span><span>skills</span><span class="on">orchestrator</span><span>demo</span></div>
+  </div>
+  <aside class="notes">
+    2 min. Matnavnene er mnemonikk. Poenget er rolleisolasjon og eierskap.
+  </aside>
+</section>
+
+<section>
+  <div class="slide">
+    <div class="hud">
+      <span><strong>09</strong> / To lag</span>
+      <span class="center">kunnskap vs arbeidsflyt</span>
+      <span class="right">09 / 14</span>
+    </div>
+    <h2 class="slide-title">To lag: <span class="cyan">kunnskap</span> og <span class="accent">arbeidsflyt</span></h2>
+    <div class="layer-split">
+      <div class="layer-column knowledge">
+        <span class="layer-label">Kunnskap</span>
+        <h3>Det agenten kan bruke</h3>
+        <div class="layer-items">
+          <div class="layer-item">
+            <strong>Instructions</strong>
+            <span>repo-spesifikke valg · path-scoped</span>
+          </div>
+          <div class="layer-item">
+            <strong>Skills</strong>
+            <span>repeterbare arbeidsflyter · progressive disclosure</span>
+          </div>
+        </div>
+      </div>
+      <div class="layer-divider" aria-hidden="true"></div>
+      <div class="layer-column workflow">
+        <span class="layer-label">Arbeidsflyt og roller</span>
+        <h3>Det agentene eier</h3>
+        <div class="layer-items">
+          <div class="layer-item">
+            <strong>Hovmester</strong>
+            <span>holder tråden · delegerer · konsoliderer</span>
+          </div>
+          <div class="layer-item">
+            <strong>Agenter</strong>
+            <span>eier roller: plan · backend · frontend · review</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p class="layer-bottom">Kunnskap gjenbrukes. Arbeid koordineres.</p>
+    <div class="rail"><span class="on">context</span><span class="on">instructions</span><span class="on">skills</span><span class="on">orchestrator</span><span>demo</span></div>
+  </div>
+  <aside class="notes">
+    60 sek. Svar på "hva skal være instruction, skill eller agent?". Kunnskap ligger i repoet. Arbeidsflyt eies av agentene.
+  </aside>
+</section>
+
+<section>
+  <div class="slide">
+    <div class="hud">
+      <span><strong>10</strong> / Context economy</span>
+      <span class="center">subagents</span>
+      <span class="right">10 / 14</span>
+    </div>
+    <h2 class="slide-title">Orkestrering fordeler kontekst etter <span class="accent">ansvar</span></h2>
+    <svg class="diagram" viewBox="0 0 1120 430" xmlns="http://www.w3.org/2000/svg" aria-label="Context windows">
+      <text x="25" y="44" font-family="IBM Plex Mono" font-size="18" fill="#aeb7aa" letter-spacing="2">UTEN ORKESTRERING</text>
+      <rect x="25" y="68" width="980" height="46" rx="5" fill="none" stroke="rgba(244,247,239,0.32)"/>
+      <rect x="25" y="68" width="310" height="46" rx="5" fill="#ff4f3f"/>
+      <rect x="335" y="68" width="330" height="46" fill="rgba(255,190,85,0.65)"/>
+      <rect x="665" y="68" width="250" height="46" fill="rgba(174,183,170,0.42)"/>
+      <text x="180" y="144" font-family="IBM Plex Mono" font-size="16" fill="#aeb7aa" text-anchor="middle">repo + regler</text>
+      <text x="500" y="144" font-family="IBM Plex Mono" font-size="16" fill="#aeb7aa" text-anchor="middle">utforskning</text>
+      <text x="790" y="144" font-family="IBM Plex Mono" font-size="16" fill="#aeb7aa" text-anchor="middle">historikk</text>
+      <text x="928" y="144" font-family="IBM Plex Mono" font-size="16" fill="#ff4f3f" text-anchor="middle">lite arbeidsrom</text>
+
+      <line x1="25" y1="192" x2="1080" y2="192" stroke="rgba(244,247,239,0.16)"/>
+
+      <text x="25" y="248" font-family="IBM Plex Mono" font-size="18" fill="#aeb7aa" letter-spacing="2">MED ORKESTRERING</text>
+      <rect x="25" y="272" width="980" height="40" rx="5" fill="none" stroke="rgba(124,255,107,0.64)"/>
+      <rect x="25" y="272" width="170" height="40" rx="5" fill="#7CFF6B"/>
+      <text x="110" y="299" font-family="IBM Plex Mono" font-size="16" fill="#080a09" text-anchor="middle">hovmester</text>
+      <text x="855" y="299" font-family="IBM Plex Mono" font-size="16" fill="#7CFF6B" text-anchor="middle">sammendrag tilbake</text>
+
+      <rect x="80" y="340" width="240" height="28" rx="4" fill="rgba(57,215,255,0.22)" stroke="#39D7FF"/>
+      <text x="200" y="361" font-family="IBM Plex Mono" font-size="15" fill="#f4f7ef" text-anchor="middle">souschef · eget vindu</text>
+      <rect x="355" y="340" width="300" height="28" rx="4" fill="rgba(57,215,255,0.22)" stroke="#39D7FF"/>
+      <text x="505" y="361" font-family="IBM Plex Mono" font-size="15" fill="#f4f7ef" text-anchor="middle">kokk · eget vindu</text>
+      <rect x="690" y="340" width="270" height="28" rx="4" fill="rgba(57,215,255,0.22)" stroke="#39D7FF"/>
+      <text x="825" y="361" font-family="IBM Plex Mono" font-size="15" fill="#f4f7ef" text-anchor="middle">konditor · eget vindu</text>
+    </svg>
+    <p class="muted" style="font-family:var(--ff-mono); font-size:0.95rem; margin-top:1.2rem;">
+      Hver subagent får konteksten den trenger. Hovmester får bare det relevante tilbake.
+    </p>
+    <div class="rail"><span class="on">context</span><span>instructions</span><span>skills</span><span class="on">orchestrator</span><span>demo</span></div>
+  </div>
+  <aside class="notes">
+    2 min. Bruk "context economy" som et begrep publikum kan ta med hjem.
+  </aside>
+</section>
+
+<section>
+  <div class="slide">
+    <div class="hud">
+      <span><strong>11</strong> / Hvor virker det?</span>
+      <span class="center">repo-distribusjon</span>
+      <span class="right">11 / 14</span>
+    </div>
+    <h2 class="slide-title">Legg det i repoet.<br>Bruk det på flere <span class="accent">flater</span></h2>
+    <div class="capability-map" aria-label="Capability map">
+      <div class="capability-band">
+        <h3>Instructions</h3>
+        <p class="scope">lokale regler</p>
+        <div class="surface-row">
+          <span class="surface on">CLI</span>
+          <span class="surface on">VS Code</span>
+          <span class="surface on">github.com agent</span>
+          <span class="surface on">code review</span>
+        </div>
+      </div>
+      <div class="capability-band">
+        <h3>Skills</h3>
+        <p class="scope">capabilities ved behov</p>
+        <div class="surface-row">
+          <span class="surface on">CLI</span>
+          <span class="surface on">VS Code</span>
+          <span class="surface on">github.com agent</span>
+          <span class="surface">code review</span>
+        </div>
+      </div>
+      <div class="capability-band">
+        <h3>Hovmester</h3>
+        <p class="scope">valgbar agent + interne subagenter</p>
+        <div class="surface-row">
+          <span class="surface on">CLI</span>
+          <span class="surface on">VS Code</span>
+          <span class="surface on">github.com agent</span>
+          <span class="surface">code review</span>
+        </div>
+      </div>
+    </div>
+    <p class="muted" style="font-family:var(--ff-mono); font-size:0.92rem; margin-top:1.15rem;">
+      Sync-workflowen legger instructions, skills og agents i repoets .github-katalog. Da oppdages de der Copilot jobber.
+    </p>
+    <div class="rail"><span>context</span><span class="on">instructions</span><span class="on">skills</span><span class="on">orchestrator</span><span>demo</span></div>
+  </div>
+  <aside class="notes">
+    2 min. Poenget er distribusjon: fordi filene ligger i repoet, får alle Copilot-flatene samme kunnskapsgrunnlag.
+  </aside>
+</section>
+
+<section data-background-color="#080a09">
+  <div class="slide slide--terminal slide--center">
+    <div class="hud">
+      <span><strong>12</strong> / Demo</span>
+      <span class="center">tilbake til terminal</span>
+      <span class="right">12 / 14</span>
+    </div>
+    <span class="kicker">Live checkpoint</span>
+    <h2 class="big">Hva har Hovmester gjort i bakgrunnen?</h2>
+    <p class="lede" style="margin-top:1.4rem;">
+      Fra én bestilling til plan, delegering og kodeendringer.
+    </p>
+    <div class="rail"><span>context</span><span>instructions</span><span>skills</span><span class="on">orchestrator</span><span class="on">demo</span></div>
+  </div>
+  <aside class="notes">
+    3-4 min. Bytt til terminal. Vis Steg 0, planen, subagent-status og første diff. Hvis du rekker: vis én inspektør-kommentar og knytt den til kryssmodell-review. Hvis run henger, vis gårsdagens run og si det rett ut.
+  </aside>
+</section>
+
+<section>
+  <div class="slide slide--center">
+    <div class="hud">
+      <span><strong>13</strong> / Ta med hjem</span>
+      <span class="center">tre observasjoner</span>
+      <span class="right">13 / 14</span>
+    </div>
+    <h2 class="slide-title">Tre mønstre å ta med <span class="accent">videre</span></h2>
+    <div class="takeaways">
+      <div class="takeaway">
+        <span class="num">01</span>
+        <h3>Hold konteksten frisk</h3>
+        <p>Begrens støy. Bruk path-scoped instructions og skills med progressive disclosure.</p>
+      </div>
+      <div class="takeaway">
+        <span class="num">02</span>
+        <h3>Legg kunnskapen i repoet</h3>
+        <p>Instructions for repo-spesifikke valg. Skills for repeterbare arbeidsflyter og Nav-kunnskap.</p>
+      </div>
+      <div class="takeaway">
+        <span class="num">03</span>
+        <h3>Orkestrer når én agent ikke holder</h3>
+        <p>Bruk Hovmester når oppgaven trenger flere context windows eller uavhengig review.</p>
+      </div>
+    </div>
+    <div class="rail"><span class="on">context</span><span class="on">instructions</span><span class="on">skills</span><span class="on">orchestrator</span><span>demo</span></div>
+  </div>
+  <aside class="notes">
+    90 sek. Dette er konklusjonen. Ikke introduser nye konsepter her.
+  </aside>
+</section>
+
+<section>
+  <div class="slide">
+    <div class="hud">
+      <span><strong>14</strong> / Prøv selv</span>
+      <span class="center">Distribusjon</span>
+      <span class="right">14 / 14</span>
+    </div>
+    <div style="display:grid; grid-template-columns:minmax(0, 1.05fr) minmax(0, 0.95fr); gap:4rem; align-items:center; height:100%;">
+      <div>
+        <span class="kicker">Neste steg</span>
+        <h2 class="slide-title">Start i <span class="accent">navikt/hovmester</span></h2>
+        <p class="body">
+          README viser hvordan du synker agents, instructions, skills og templates inn i repoet ditt.
+        </p>
+        <a class="repo-link" href="https://github.com/navikt/hovmester/">github.com/navikt/hovmester</a>
+        <div style="margin-top:1.8rem;">
+          <span class="tag green">collections</span>
+          <span class="tag cyan">skills</span>
+          <span class="tag amber">agents</span>
+          <span class="tag">issue templates</span>
+        </div>
+        <p class="lede" style="color:var(--green) !important; font-family:var(--ff-condensed); font-size:3rem !important; line-height:1; margin-top:3.4rem; text-transform:uppercase;">
+          Spørsmål?
+        </p>
+      </div>
+      <div class="repo-plate">
+        <div>
+          <span class="kicker">Prøv selv</span>
+          <div class="repo-wordmark"><span>navikt/</span>hovmester</div>
+        </div>
+        <div class="terminal">
+          <div class="bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
+          <div class="content"><span class="prompt">$</span> gh repo view navikt/hovmester --web
+<span class="comment"># sync -> collections -> agents -> templates</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">
+    Resten. Ikke gå gjennom setup på slide. Si: repoet er docs, denne talken var modellen.
+    Inspirasjon/kilder ved behov: GitHub Docs om CLI/subagents/skills, GitHub CLI best practices,
+    Awesome Copilot Learning Hub, obra/superpowers.
+  </aside>
+</section>
+
+</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/notes/notes.js"></script>
+<script>
+  Reveal.initialize({
+    width: 1920,
+    height: 1080,
+    margin: 0,
+    minScale: 0.2,
+    maxScale: 2.0,
+    hash: true,
+    transition: 'none',
+    backgroundTransition: 'none',
+    slideNumber: false,
+    controls: true,
+    controlsTutorial: false,
+    progress: true,
+    center: false,
+    disableLayout: false,
+    plugins: [ RevealNotes ]
+  });
+</script>
+
+</body>
+</html>
