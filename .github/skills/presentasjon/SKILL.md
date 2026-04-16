@@ -1,6 +1,6 @@
 ---
-name: tech-talk-design
-description: Lag, review eller forbedre tekniske presentasjoner for utviklere med sterkere narrativ, mindre tekst, bedre visuals og tryggere live-demo. Brukes når brukeren jobber med slide decks, conference talks, fagpresentasjoner, speaker notes, demo-timing, talk review eller visuell presentasjonsdesign.
+name: presentasjon
+description: Lag, review eller forbedre tekniske presentasjoner — sterkere narrativ, mindre tekst, bedre visuals og tryggere live-demo.
 ---
 
 # Tech Talk Design
