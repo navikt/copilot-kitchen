@@ -1,6 +1,6 @@
 # hovmester 🍽️
 
-Multi-agent Copilot-orkestrering for Nav-team. Én workflow gir repoet ditt en orkestrator (hovmester), en planlegger (souschef), spesialister (kokk/konditor) og kryssmodell-reviewere (inspektører) — pluss instruksjoner, skills og issue-/PR-templates.
+Multi-agent Copilot-orkestrering for Nav-team. Én workflow gir repoet ditt en orkestrator (hovmester), en planlegger (souschef), spesialister (kokk/konditor) og kryssmodell-reviewere (inspektører) — pluss felles instruksjoner, skills og issue-/PR-templates.
 
 ## Kom i gang
 
@@ -68,7 +68,7 @@ Collections grupperer instruksjoner, skills og agenter i navngitte pakker du vel
 
 | Collection | Beskrivelse |
 |---|---|
-| `hovmester` *(alltid inkludert)* | Orkestrator-agentene, Nav-brede instruksjoner (sikkerhet, Docker, GitHub Actions), 13 generiske skills og issue-/PR-templates |
+| `hovmester` *(alltid inkludert)* | Orkestrator-agentene, felles instruksjoner (sikkerhet, Docker, GitHub Actions), 13 generiske skills og issue-/PR-templates |
 | `backend` | Kotlin-instruksjon + 7 backend-skills (Ktor, Spring, Flyway, Kafka, Postgres, API-design, auth) |
 | `frontend` | Frontend- og tilgjengelighets-instruksjoner + 4 frontend-skills (Aksel, auth, Lumi, accessibility-review) |
 
@@ -180,7 +180,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:
-      contents: write
+      contents: read
       pull-requests: write
     steps:
       - name: Verify file scope
@@ -248,7 +248,15 @@ jobs:
 
           echo "✅ All files within hovmester sync scope"
 
-      - name: Approve and enable auto-merge
+      - name: Create GitHub App token for merge
+        id: app-token
+        if: github.head_ref == 'hovmester-sync' && github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.user.login == 'my-sync-app[bot]'
+        uses: actions/create-github-app-token@f8d387b68d61c58ab83c6c016672934102569859 # v3.0.0
+        with:
+          app-id: "123456"
+          private-key: ${{ secrets.HOVMESTER_APP_PRIVATE_KEY }}
+
+      - name: Approve sync PR
         if: github.head_ref == 'hovmester-sync' && github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.user.login == 'my-sync-app[bot]'
         env:
           GH_TOKEN: ${{ github.token }}
@@ -256,6 +264,14 @@ jobs:
           REPO: ${{ github.repository }}
         run: |
           gh pr review "$PR_NUMBER" --repo "$REPO" --approve --body "Auto-approved: file scope verified ✅"
+
+      - name: Enable auto-merge
+        if: github.head_ref == 'hovmester-sync' && github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.user.login == 'my-sync-app[bot]'
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
+        run: |
           gh pr merge "$PR_NUMBER" --repo "$REPO" --auto --squash
 ```
 
@@ -264,6 +280,8 @@ jobs:
 > `pull_request_target` er trygt her fordi workflowen aldri sjekker ut PR-branchen. Den leser bare filstier via GitHub API og bruker repoets egne workflow-fil fra default branch.
 >
 > `merge_group`-triggeren er en no-op som lar merge queue passere — verifiseringen skjer allerede på `pull_request_target`. Uten denne vil `verify-hovmester-sync` blokkere merge queue med "Expected — Waiting for status".
+>
+> Approve-steget bruker fortsatt `GITHUB_TOKEN`, men merge-steget bruker et GitHub App-token fra `HOVMESTER_APP_PRIVATE_KEY`. Det gjør at `gh pr merge --auto --squash` kan legge PRen i merge queue uten å bli stoppet av GitHub sin anti-rekursjon for `GITHUB_TOKEN`-utløste workflow-runs.
 
 **Steg 4 — Sett branch protection**
 
