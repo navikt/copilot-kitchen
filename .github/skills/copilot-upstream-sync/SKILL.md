@@ -1,27 +1,31 @@
 ---
 name: copilot-upstream-sync
-description: Sjekk navikt/copilot for nye mønstre, instructions og skills som er verdt å adoptere i copilot-kitchen
+description: Sjekk navikt/copilot for nye mønstre, instructions og skills som er verdt å adoptere i hovmester
 ---
 
 # Upstream-sync fra navikt/copilot
 
-Strukturert gjennomgang av `navikt/copilot`-repoet for å finne oppdateringer verdt å ta inn i copilot-kitchen.
+Strukturert gjennomgang av `navikt/copilot`-repoet for å finne oppdateringer verdt å ta inn i hovmester.
 
 ## Fremgangsmåte
 
+### 0. Les siste sync-state
+
+Les [references/upstream-state.md](references/upstream-state.md) først. Den inneholder siste sjekket commit-SHA og hva som ble adoptert/droppet. Hent kun commits **etter** den SHA-en fra `navikt/copilot`. Etter fullført gjennomgang, oppdater filen med ny SHA, dato og beslutninger.
+
 ### 1. Hent og sammenlign
 
-Klon eller oppdater `navikt/copilot` og sammenlign med copilot-kitchen:
+Hent nye commits fra `navikt/copilot` (etter siste synced SHA fra state-filen). Sammenlign også filstrukturen:
 
 ```bash
 # Sammenlign instruksjoner
-diff <(ls navikt-copilot/.github/instructions/) <(ls copilot-kitchen/instructions/)
+diff <(ls navikt-copilot/.github/instructions/) <(ls hovmester/instructions/)
 
 # Sammenlign skills
-diff <(ls navikt-copilot/.github/skills/) <(ls copilot-kitchen/skills/)
+diff <(ls navikt-copilot/.github/skills/) <(ls hovmester/skills/)
 
 # Sammenlign agenter
-diff <(ls navikt-copilot/.github/agents/) <(ls copilot-kitchen/agents/)
+diff <(ls navikt-copilot/.github/agents/) <(ls hovmester/agents/)
 ```
 
 ### 2. Vurder nye filer
@@ -112,6 +116,7 @@ Fokuser på disse kategoriene i denne rekkefølgen:
 - Oppdater `collections.yml` med nye filer i riktig collection
 - Kjør tester: `cd scripts && python3 -m pytest test_sync.py -v`
 - Verifiser at sync fungerer: `python3 scripts/sync.py --source . --target /tmp/test-repo --output /tmp/result.json`
+- **Oppdater [references/upstream-state.md](references/upstream-state.md)** med ny SHA, dato og beslutninger (adoptert/droppet med begrunnelse)
 
 ## Kjente forskjeller
 
