@@ -15,7 +15,7 @@ LINE_CAP_ALLOWLIST = {"lumi-survey"}  # pre-existing; split in follow-up
 
 # Skills som lever KUN i .github/ (hovmester-repoets egen Copilot-config)
 # og ikke i dist/. Disse parity-testen ignorerer.
-GITHUB_ONLY_SKILLS = {"copilot-upstream-sync"}
+GITHUB_ONLY_SKILLS = {"copilot-upstream-sync", "presentasjon"}
 
 
 def _iter_md_files(root):
